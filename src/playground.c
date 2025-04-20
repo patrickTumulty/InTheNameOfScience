@@ -1,5 +1,8 @@
 
+#include "astar.h"
+#include "bool_mat.h"
 #include "linked_list.h"
+#include "utils.h"
 #include <stdio.h>
 
 struct ListNumber
@@ -10,30 +13,18 @@ struct ListNumber
 
 int main(void)
 {
-    LList llist;
+    Position start = {10, 10};
+    Position dest = {15, 15};
 
-    llistInit(&llist);
+    BoolMat *navGrid = boolMatNew(30, 30, true);
+    AStarPath path = {0};
 
-    struct ListNumber numbers[] = {
-        {.num = 0, .node = {0}},
-        {.num = 1, .node = {0}},
-        {.num = 2, .node = {0}},
-        {.num = 3, .node = {0}},
-    };
+    astar(start, dest, navGrid, &path);
 
-    for (int i = 0; i < 4; i++) {
-        llistInitNode(&numbers[i].node, &numbers[i]);
-        llistAppend(&llist, &numbers[i].node);
+    printf("path=%d\n", path.pathLen);
+
+    for (int i = 0; i < path.pathLen; i++)
+    {
+        printf("x=%2d, y=%2d\n", path.path[i].x, path.path[i].y);
     }
-
-    llistRemove(&llist, &numbers[2].node);
-
-    struct ListNumber *num;
-    LNode *node;
-
-    LListForEach(&llist, node) {
-        num = LListGetEntry(node, struct ListNumber);
-        printf("%d\n", num->num);
-    }
-
 }

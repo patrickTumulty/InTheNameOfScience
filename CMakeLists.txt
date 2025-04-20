@@ -16,11 +16,15 @@ set(
     SOURCE_FILES
     src/astar.c
     src/linked_list.c
+    src/bool_mat.c
+    src/utils.c
 )
 
 add_executable(${PROJECT_NAME} src/main.c ${SOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 
-add_executable(playground src/playground.c src/linked_list.c)
+add_executable(playground src/playground.c src/linked_list.c src/bool_mat.c src/astar.c src/utils.c)
+
+target_link_libraries(playground PRIVATE m)
 

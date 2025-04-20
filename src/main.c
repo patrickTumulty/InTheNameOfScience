@@ -1,5 +1,8 @@
 
+#include "astar.h"
+#include "bool_mat.h"
 #include "raylib.h"
+#include "utils.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,8 +35,8 @@ void printvec(Vector2 v)
     printf("Vec2 x=%.2f, y=%.2f\n", v.x, v.y);
 }
 
-constexpr int WORLD_HEIGHT = 100;
-constexpr int WORLD_WIDTH = 100;
+constexpr int WORLD_HEIGHT = 50;
+constexpr int WORLD_WIDTH = 50;
 
 constexpr int TILE_SIZE = 30;
 
@@ -47,23 +50,58 @@ int main(void)
     SetWindowState(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
     SetWindowMinSize(screenWidth, screenHeight);
 
+    BoolMat *navGrid = boolMatNew(WORLD_HEIGHT, WORLD_WIDTH, true);
+
     char world[WORLD_HEIGHT][WORLD_WIDTH] = {0};
 
     SetTargetFPS(60);
 
-    Vector2 startingPoint = {10, 10};
+    Position startingPoint = {1, 1};
 
-    world[10][10] = '1';
 
     while (!WindowShouldClose())
     {
+        Vector2 mousePosition = GetMousePosition();
+        int row = mousePosition.y / TILE_SIZE;
+        int col = mousePosition.x / TILE_SIZE;
+
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
         {
-            Vector2 mousePosition = GetMousePosition();
-            int row = mousePosition.y / TILE_SIZE;
-            int col = mousePosition.x / TILE_SIZE;
             world[row][col] = 'X';
+            boolMatSet(navGrid, col, row, false);
         }
+        else if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+        {
+            // Clear path
+            for (int i = 0; i < WORLD_HEIGHT; i++)
+            {
+                for (int j = 0; j < WORLD_WIDTH; j++)
+                {
+                    if (world[i][j] == '3' || world[i][j] == '2')
+                    {
+                        world[i][j] = 0;
+                    }
+                }
+            }
+
+            AStarPath path = {0};
+
+            astar(startingPoint, (Position) {.x = row, .y = col}, navGrid, &path);
+
+            if (path.path != NULL && path.pathLen != 0)
+            {
+                for (int i = 0; i < path.pathLen; i++)
+                {
+                    Position p = path.path[i];
+                    world[p.x][p.y] = '3';
+                }
+                free(path.path);
+            }
+
+            world[row][col] = '2';
+        }
+            
+        world[startingPoint.y][startingPoint.x] = '1';
 
         BeginDrawing();
 
@@ -74,13 +112,22 @@ int main(void)
             for (int j = 0; j < WORLD_WIDTH; j++)
             {
                 Color color;
-                if (world[i][j] == 'X')
+
+                if (boolMatGet(navGrid, j, i) == 0)
                 {
                     color = BLACK;
                 }
                 else if (world[i][j] == '1')
                 {
                     color = RED;
+                }
+                else if (world[i][j] == '2')
+                {
+                    color = GREEN;
+                }
+                else if (world[i][j] == '3')
+                {
+                    color = BLUE;
                 }
                 else
                 {
@@ -101,6 +148,8 @@ int main(void)
     }
 
     CloseWindow();
+
+    navGrid = boolMatFree(navGrid);
 
     return 0;
 }

@@ -8,15 +8,6 @@ void llistInit(LList *llist)
     llist->size = 0;
 }
 
-static LNode *llistGetTail(LNode *node)
-{
-    if (node->next == NULL)
-    {
-        return node;
-    }
-    return llistGetTail(node->next);
-}
-
 void llistInitNode(LNode *node, void *data)
 {
     node->data = data;
@@ -24,25 +15,33 @@ void llistInitNode(LNode *node, void *data)
     node->prev = NULL;
 }
 
+bool llistIsEmpty(LList *llist)
+{
+    return llist->head == NULL;
+}
+
 void llistAppend(LList *llist, LNode *lnode)
 {
     if (llist->head == NULL)
     {
         llist->head = lnode;
+        llist->tail = lnode;
+        llist->size = 1;
         return;
     }
 
-    LNode *tail = llistGetTail(llist->head);
+    LNode *tail = llist->tail;
     tail->next = lnode;
     lnode->prev = tail;
+    llist->tail = lnode;
     llist->size++;
 }
 
-void llistRemove(LList *llist, LNode *lnode)
+LNode *llistRemove(LList *llist, LNode *lnode)
 {
     if (lnode == NULL || llist == NULL)
     {
-        return;
+        return NULL;
     }
 
     if (lnode->next != NULL)
@@ -50,8 +49,84 @@ void llistRemove(LList *llist, LNode *lnode)
         lnode->next->prev = lnode->prev;
     }
 
+    if (llist->head == lnode)
+    {
+        llist->head = lnode->next;
+    }
+
     if (lnode->prev != NULL)
     {
         lnode->prev->next = lnode->next;
     }
+
+    if (llist->tail == lnode)
+    {
+        llist->tail = lnode->prev;
+    }
+
+    lnode->next = NULL;
+    lnode->prev = NULL;
+
+    llist->size--;
+
+    return lnode;
+}
+
+
+void llistPushFront(LList *llist, LNode *lnode)
+{
+    if (llist->head == NULL)
+    {
+        llist->head = lnode;
+        llist->tail = lnode;
+        return;
+    }
+
+    LNode *head = llist->head;
+    head->prev = lnode;
+    lnode->next = head;
+    llist->head = lnode;
+    llist->size++;
+}
+
+void llistPushBack(LList *llist, LNode *lnode)
+{
+    if (llist->head == NULL)
+    {
+        llist->head = lnode;
+        llist->tail = lnode;
+        return;
+    }
+
+    LNode *tail = llist->tail;
+    tail->next = lnode;
+    lnode->prev = tail;
+    llist->tail = lnode;
+    llist->size++;
+}
+
+LNode *llistPopBack(LList *llist)
+{
+    if (llist->tail == NULL)
+    {
+        return NULL;
+    }
+    LNode *tail = llist->tail;
+    llist->tail = tail->prev;
+    llist->tail->next = NULL;
+    llist->size--;
+    return tail;
+}
+
+LNode *llistPopFront(LList *llist)
+{
+    if (llist->head == NULL)
+    {
+        return NULL;
+    }
+    LNode *head = llist->head;
+    llist->head = head->next;
+    llist->head->prev = NULL;
+    llist->size--;
+    return head;
 }
