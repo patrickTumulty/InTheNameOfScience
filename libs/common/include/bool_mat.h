@@ -11,7 +11,7 @@ typedef struct {
     bool *mat[];
 } BoolMat;
 
-BoolMat *boolMatNew(int rows, int cols, bool initial, bool outOfBounds);
+BoolMat *boolMatNew(uint32_t rows, uint32_t cols, bool initial, bool outOfBounds);
 BoolMat *boolMatFree(BoolMat *boolMat);
 BoolMat *boolMatNewCopy(const BoolMat *boolMat);
 bool boolMatGet(const BoolMat *boolMat, int x, int y); 

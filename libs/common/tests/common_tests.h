@@ -6,5 +6,6 @@
 
 void registerLinkedListTests(void);
 void registerBoolMatTests(void);
+void registerTMemTests(void);
 
 #endif
