@@ -27,13 +27,13 @@ typedef struct
 
 constexpr int MOVES = 8;
 constexpr AStarMove moves[] = {
-    {{1, 1}, 14},
     {{1, 0}, 10},
-    {{1, -1}, 14},
     {{0, 1}, 10},
-    {{0, -1}, 10},
-    {{-1, 1}, 14},
     {{-1, 0}, 10},
+    {{0, -1}, 10},
+    {{1, 1}, 14},
+    {{1, -1}, 14},
+    {{-1, 1}, 14},
     {{-1, -1}, 14},
 };
 
@@ -83,19 +83,19 @@ static bool inBounds(Position pos, int xMax, int yMax)
 static bool isClosed(const BoolMat *closedMat, Position pos)
 {
     int result = boolMatGet(closedMat, pos.x, pos.y);
-    return result == BM_OUT_OF_BOUNDS ? true : result;
+    return result == -1 ? true : result;
 }
 
 static bool isUnBlocked(const BoolMat *navGrid, Position pos)
 {
     int result = boolMatGet(navGrid, pos.x, pos.y);
-    return result == BM_OUT_OF_BOUNDS ? false : result;
+    return result == -1 ? false : result;
 }
 
 static bool isBlocked(const BoolMat *navGrid, Position pos)
 {
     int result = boolMatGet(navGrid, pos.x, pos.y);
-    return result == BM_OUT_OF_BOUNDS ? true : result == false;
+    return result == -1 ? true : result == false;
 }
 
 static float calcHVal(Position p, Position dest)
@@ -143,7 +143,7 @@ void astar(Position startPos, Position destPos, const BoolMat *navGrid, AStarPat
         return;
     }
 
-    if (isBlocked(navGrid, startPos) && isBlocked(navGrid, destPos))
+    if (isBlocked(navGrid, startPos) || isBlocked(navGrid, destPos))
     {
         return;
     }
@@ -153,7 +153,7 @@ void astar(Position startPos, Position destPos, const BoolMat *navGrid, AStarPat
         return; // Already there
     }
 
-    BoolMat *closedMat = boolMatNew(navGrid->rows, navGrid->cols, false);
+    BoolMat *closedMat = boolMatNew(navGrid->rows, navGrid->cols, false, true);
     AStarCell **cellMat = newAStarCellMat(navGrid->rows, navGrid->cols);
 
     AStarCell *startingCell = &cellMat[startPos.y][startPos.x];

@@ -7,15 +7,14 @@
 typedef struct {
     uint32_t rows;
     uint32_t cols;
+    bool outOfBounds; // Return this when out-of-bounds on get
     bool *mat[];
 } BoolMat;
 
-#define BM_OUT_OF_BOUNDS (-1)
-
-BoolMat *boolMatNew(int rows, int cols, bool initial);
+BoolMat *boolMatNew(int rows, int cols, bool initial, bool outOfBounds);
 BoolMat *boolMatFree(BoolMat *boolMat);
 BoolMat *boolMatNewCopy(const BoolMat *boolMat);
-int boolMatGet(const BoolMat *boolMat, int x, int y); 
-int boolMatSet(BoolMat *boolMat, int x, int y, bool b); 
+bool boolMatGet(const BoolMat *boolMat, int x, int y); 
+void boolMatSet(BoolMat *boolMat, int x, int y, bool b); 
 
 #endif // BOOL_MAT_H

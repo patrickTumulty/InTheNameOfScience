@@ -1,50 +1,56 @@
 
 #include "linked_list.h"
-#include <stdlib.h>
+#include <stdbool.h>
+
+static bool llistContainsNode(LList *llist, LNode *lnode)
+{
+    LNode *n = nullptr;
+    LListForEach(llist, n)
+    {
+        if (n == lnode)
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 void llistInit(LList *llist)
 {
-    llist->head = NULL;
+    llist->head = nullptr;
     llist->size = 0;
 }
 
 void llistInitNode(LNode *node, void *data)
 {
     node->data = data;
-    node->next = NULL;
-    node->prev = NULL;
+    node->next = nullptr;
+    node->prev = nullptr;
 }
 
 bool llistIsEmpty(LList *llist)
 {
-    return llist->head == NULL;
+    return llist->head == nullptr;
 }
 
 void llistAppend(LList *llist, LNode *lnode)
 {
-    if (llist->head == NULL)
-    {
-        llist->head = lnode;
-        llist->tail = lnode;
-        llist->size = 1;
-        return;
-    }
-
-    LNode *tail = llist->tail;
-    tail->next = lnode;
-    lnode->prev = tail;
-    llist->tail = lnode;
-    llist->size++;
+    llistPushBack(llist, lnode);
 }
 
 LNode *llistRemove(LList *llist, LNode *lnode)
 {
-    if (lnode == NULL || llist == NULL)
+    if (lnode == nullptr || llist == nullptr)
     {
-        return NULL;
+        return nullptr;
     }
 
-    if (lnode->next != NULL)
+    if (!llistContainsNode(llist, lnode))
+    {
+        return nullptr;
+    }
+
+    if (lnode->next != nullptr)
     {
         lnode->next->prev = lnode->prev;
     }
@@ -54,7 +60,7 @@ LNode *llistRemove(LList *llist, LNode *lnode)
         llist->head = lnode->next;
     }
 
-    if (lnode->prev != NULL)
+    if (lnode->prev != nullptr)
     {
         lnode->prev->next = lnode->next;
     }
@@ -64,8 +70,8 @@ LNode *llistRemove(LList *llist, LNode *lnode)
         llist->tail = lnode->prev;
     }
 
-    lnode->next = NULL;
-    lnode->prev = NULL;
+    lnode->next = nullptr;
+    lnode->prev = nullptr;
 
     llist->size--;
 
@@ -75,7 +81,12 @@ LNode *llistRemove(LList *llist, LNode *lnode)
 
 void llistPushFront(LList *llist, LNode *lnode)
 {
-    if (llist->head == NULL)
+    if (llistContainsNode(llist, lnode))
+    {
+        return;
+    }
+
+    if (llist->head == nullptr)
     {
         llist->head = lnode;
         llist->tail = lnode;
@@ -91,10 +102,17 @@ void llistPushFront(LList *llist, LNode *lnode)
 
 void llistPushBack(LList *llist, LNode *lnode)
 {
-    if (llist->head == NULL)
+
+    if (llistContainsNode(llist, lnode))
+    {
+        return;
+    }
+
+    if (llist->head == nullptr)
     {
         llist->head = lnode;
         llist->tail = lnode;
+        llist->size = 1;
         return;
     }
 
@@ -107,26 +125,32 @@ void llistPushBack(LList *llist, LNode *lnode)
 
 LNode *llistPopBack(LList *llist)
 {
-    if (llist->tail == NULL)
+    if (llist->tail == nullptr)
     {
-        return NULL;
+        return nullptr;
     }
     LNode *tail = llist->tail;
     llist->tail = tail->prev;
-    llist->tail->next = NULL;
+    if (llist->tail != nullptr)
+    {
+        llist->tail->next = nullptr;
+    }
     llist->size--;
     return tail;
 }
 
 LNode *llistPopFront(LList *llist)
 {
-    if (llist->head == NULL)
+    if (llist->head == nullptr)
     {
-        return NULL;
+        return nullptr;
     }
     LNode *head = llist->head;
     llist->head = head->next;
-    llist->head->prev = NULL;
+    if (llist->head != nullptr)
+    {
+        llist->head->prev = nullptr;
+    }
     llist->size--;
     return head;
 }

@@ -50,14 +50,13 @@ int main(void)
     SetWindowState(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
     SetWindowMinSize(screenWidth, screenHeight);
 
-    BoolMat *navGrid = boolMatNew(WORLD_HEIGHT, WORLD_WIDTH, true);
+    BoolMat *navGrid = boolMatNew(WORLD_HEIGHT, WORLD_WIDTH, true, false);
 
     char world[WORLD_HEIGHT][WORLD_WIDTH] = {0};
 
     SetTargetFPS(60);
 
     Position startingPoint = {1, 1};
-
 
     while (!WindowShouldClose())
     {
@@ -84,23 +83,23 @@ int main(void)
                 }
             }
 
-            AStarPath path = {0};
+            AStarPath path = {};
 
-            astar(startingPoint, (Position) {.x = row, .y = col}, navGrid, &path);
+            astar(startingPoint, (Position) {.x = col, .y = row}, navGrid, &path);
 
-            if (path.path != NULL && path.pathLen != 0)
+            if (path.path != NULL || path.pathLen != 0)
             {
                 for (int i = 0; i < path.pathLen; i++)
                 {
                     Position p = path.path[i];
-                    world[p.x][p.y] = '3';
+                    world[p.y][p.x] = '3';
                 }
                 free(path.path);
             }
 
             world[row][col] = '2';
         }
-            
+
         world[startingPoint.y][startingPoint.x] = '1';
 
         BeginDrawing();

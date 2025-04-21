@@ -1,0 +1,33 @@
+CompileFlags:                     # Tweak the parse settings
+  Add: -Wall 
+
+Index:
+  StandardLibrary: Yes
+
+Diagnostics:
+  ClangTidy:
+    Add: [
+      modernize*, 
+      bugprone*, 
+      cert*, 
+      cppcoreguidelines*, 
+      concurrency*, 
+      google*, 
+      misc*, 
+      readability* 
+    ]
+    Remove: [
+      bugprone-easily-swappable-parameters,
+      cert-env33-c, 
+      readability-identifier-length, 
+      readability-magic-numbers,
+      cppcoreguidelines-avoid-magic-numbers,
+    ]
+
+InlayHints:
+  BlockEnd: No
+  Designators: No
+  Enabled: No
+  ParameterNames: No
+  DeducedTypes: No
+  TypeNameLimit: 24

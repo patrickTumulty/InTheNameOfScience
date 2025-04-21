@@ -5,16 +5,16 @@
 #include <string.h>
 
 
-BoolMat *boolMatNew(int rows, int cols, bool initial)
+BoolMat *boolMatNew(int rows, int cols, bool initial, bool outOfBounds)
 {
-    int size = sizeof(BoolMat) + (rows * sizeof(bool *)) + (rows * cols);
-    uint8_t *data = calloc(1, size);
-    if (data == NULL)
+    uint8_t *data = calloc(1, sizeof(BoolMat) + (rows * sizeof(bool *)) + (rows * cols));
+    if (data == nullptr)
     {
-        return NULL;
+        return nullptr;
     }
 
     BoolMat *boolMat = (BoolMat *) data;
+    boolMat->outOfBounds = outOfBounds;
 
     boolMat->rows = rows;
     boolMat->cols = cols;
@@ -23,7 +23,7 @@ BoolMat *boolMatNew(int rows, int cols, bool initial)
     for (int i = 0; i < rows; i++)
     {
         boolMat->mat[i] = (bool *) (data + offset);
-        memset(boolMat->mat[i], initial, cols);
+        memset(boolMat->mat[i], (int) initial, cols);
         offset += cols;
     }
 
@@ -33,16 +33,16 @@ BoolMat *boolMatNew(int rows, int cols, bool initial)
 BoolMat *boolMatFree(BoolMat *boolMat)
 {
     free(boolMat);
-    return NULL;
+    return nullptr;
 }
 
 BoolMat *boolMatNewCopy(const BoolMat *boolMat)
 {
     size_t size = sizeof(BoolMat) + (boolMat->rows * sizeof(bool *)) + (boolMat->rows * boolMat->cols);
     uint8_t *data = calloc(1, size);
-    if (data == NULL)
+    if (data == nullptr)
     {
-        return NULL;
+        return nullptr;
     }
     memcpy(data, (uint8_t *) boolMat, size);
     return (BoolMat *) data;
@@ -53,21 +53,20 @@ static bool inBounds(const BoolMat *boolMat, int x, int y)
     return (0 <= x && x < boolMat->cols) && (0 <= y && y < boolMat->rows);
 }
 
-int boolMatGet(const BoolMat *boolMat, int x, int y)
+bool boolMatGet(const BoolMat *boolMat, int x, int y)
 {
     if (!inBounds(boolMat, x, y))
     {
-        return BM_OUT_OF_BOUNDS;
+        return boolMat->outOfBounds;
     }
     return boolMat->mat[y][x];
 }
 
-int boolMatSet(BoolMat *boolMat, int x, int y, bool b)
+void boolMatSet(BoolMat *boolMat, int x, int y, bool b)
 {
     if (!inBounds(boolMat, x, y))
     {
-        return BM_OUT_OF_BOUNDS;
+        return;
     }
     boolMat->mat[y][x] = b;
-    return b;
 }
