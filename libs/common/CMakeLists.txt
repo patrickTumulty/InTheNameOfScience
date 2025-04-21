@@ -10,6 +10,7 @@ set(
     src/linked_list.c
     src/bool_mat.c
     src/utils.c
+    src/tmem.c
 )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
@@ -29,6 +30,7 @@ add_executable(${PROJECT_NAME}_test
     tests/main.c
     tests/llist_tests.c
     tests/boolmat_tests.c
+    tests/tmem_tests.c
 )
 
 message(STATUS ${unity_SOURCE_DIR})

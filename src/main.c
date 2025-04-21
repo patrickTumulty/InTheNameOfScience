@@ -2,6 +2,7 @@
 #include "astar.h"
 #include "bool_mat.h"
 #include "raylib.h"
+#include "tmem.h"
 #include "utils.h"
 #include <math.h>
 #include <stdio.h>
@@ -19,9 +20,6 @@ typedef struct
     float speed;
 } Unit;
 
-#define MIN(V1, V2) ((V1) < (V2) ? (V1) : (V2))
-#define MAX(V1, V2) ((V1) > (V2) ? (V1) : (V2))
-#define CLAMP(VAL, MIN_VAL, MAX_VAL) (MIN((MAX_VAL), MAX((MIN_VAL), (VAL))))
 
 Vector2 getRandomPosition(int xMin, int xMax, int yMin, int yMax)
 {
@@ -44,6 +42,8 @@ int main(void)
 {
     const int screenWidth = 1500;
     const int screenHeight = 1500;
+
+    tMemInit();
 
     InitWindow(screenWidth, screenHeight, "In the Name of Science!");
 
@@ -82,6 +82,7 @@ int main(void)
                     }
                 }
             }
+
 
             AStarPath path = {};
 
@@ -149,6 +150,7 @@ int main(void)
     CloseWindow();
 
     navGrid = boolMatFree(navGrid);
+    tMemDestroy();
 
     return 0;
 }

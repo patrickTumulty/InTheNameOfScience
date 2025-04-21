@@ -8,6 +8,9 @@ set(CMAKE_C_STANDARD_REQUIRED True) # Optional, but recommended
 add_subdirectory(libs/raylib)
 add_subdirectory(libs/common)
 
+
+add_compile_definitions(TMEM_TRACK) 
+
 # Generate compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

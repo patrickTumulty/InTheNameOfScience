@@ -2,6 +2,7 @@
 #include "astar.h"
 #include "bool_mat.h"
 #include "linked_list.h"
+#include "tmem.h"
 #include "utils.h"
 #include <math.h>
 #include <stdint.h>
@@ -75,27 +76,19 @@ AStarCell **newAStarCellMat(int rows, int cols)
     return cellMat;
 }
 
-static bool inBounds(Position pos, int xMax, int yMax)
+static bool inBounds(Position pos, uint32_t xMax, uint32_t yMax)
 {
     return (0 <= pos.x && pos.x < xMax) && (0 <= pos.y && pos.y < yMax);
 }
 
 static bool isClosed(const BoolMat *closedMat, Position pos)
 {
-    int result = boolMatGet(closedMat, pos.x, pos.y);
-    return result == -1 ? true : result;
-}
-
-static bool isUnBlocked(const BoolMat *navGrid, Position pos)
-{
-    int result = boolMatGet(navGrid, pos.x, pos.y);
-    return result == -1 ? false : result;
+    return boolMatGet(closedMat, pos.x, pos.y);
 }
 
 static bool isBlocked(const BoolMat *navGrid, Position pos)
 {
-    int result = boolMatGet(navGrid, pos.x, pos.y);
-    return result == -1 ? true : result == false;
+    return boolMatGet(navGrid, pos.x, pos.y);
 }
 
 static float calcHVal(Position p, Position dest)
@@ -122,7 +115,7 @@ static void tracePath(AStarCell *destCell, AStarCell **cellMat, AStarPath *path)
 
     path->path = calloc(1, sizeof(Position) * tracePath.size);
 
-    LNode *node;
+    LNode *node = nullptr;
     int index = tracePath.size - 1;
     LListForEach(&tracePath, node)
     {

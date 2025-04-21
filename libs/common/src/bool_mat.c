@@ -1,11 +1,12 @@
 
 #include "bool_mat.h"
+#include "tmem.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 
-BoolMat *boolMatNew(int rows, int cols, bool initial, bool outOfBounds)
+BoolMat *boolMatNew(uint32_t rows, uint32_t cols, bool initial, bool outOfBounds)
 {
     uint8_t *data = calloc(1, sizeof(BoolMat) + (rows * sizeof(bool *)) + (rows * cols));
     if (data == nullptr)
@@ -48,14 +49,14 @@ BoolMat *boolMatNewCopy(const BoolMat *boolMat)
     return (BoolMat *) data;
 }
 
-static bool inBounds(const BoolMat *boolMat, int x, int y)
+static bool outOfBounds(const BoolMat *boolMat, int x, int y)
 {
-    return (0 <= x && x < boolMat->cols) && (0 <= y && y < boolMat->rows);
+    return 0 > x || x >= boolMat->cols || 0 > y || y >= boolMat->rows;
 }
 
 bool boolMatGet(const BoolMat *boolMat, int x, int y)
 {
-    if (!inBounds(boolMat, x, y))
+    if (outOfBounds(boolMat, x, y))
     {
         return boolMat->outOfBounds;
     }
@@ -64,7 +65,7 @@ bool boolMatGet(const BoolMat *boolMat, int x, int y)
 
 void boolMatSet(BoolMat *boolMat, int x, int y, bool b)
 {
-    if (!inBounds(boolMat, x, y))
+    if (outOfBounds(boolMat, x, y))
     {
         return;
     }
