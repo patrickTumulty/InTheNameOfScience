@@ -8,7 +8,7 @@
 
 BoolMat *boolMatNew(uint32_t rows, uint32_t cols, bool initial, bool outOfBounds)
 {
-    uint8_t *data = calloc(1, sizeof(BoolMat) + (rows * sizeof(bool *)) + (rows * cols));
+    uint8_t *data = tmemcalloc(1, sizeof(BoolMat) + (rows * sizeof(bool *)) + (rows * cols));
     if (data == nullptr)
     {
         return nullptr;
@@ -33,14 +33,14 @@ BoolMat *boolMatNew(uint32_t rows, uint32_t cols, bool initial, bool outOfBounds
 
 BoolMat *boolMatFree(BoolMat *boolMat)
 {
-    free(boolMat);
+    tmemfree(boolMat);
     return nullptr;
 }
 
 BoolMat *boolMatNewCopy(const BoolMat *boolMat)
 {
     size_t size = sizeof(BoolMat) + (boolMat->rows * sizeof(bool *)) + (boolMat->rows * boolMat->cols);
-    uint8_t *data = calloc(1, size);
+    uint8_t *data = tmemcalloc(1, size);
     if (data == nullptr)
     {
         return nullptr;

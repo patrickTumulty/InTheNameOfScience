@@ -41,7 +41,7 @@ constexpr AStarMove moves[] = {
 AStarCell **newAStarCellMat(int rows, int cols)
 {
     int s = (sizeof(AStarCell *) * rows) + (sizeof(AStarCell) * rows * cols);
-    uint8_t *data = calloc(1, s);
+    uint8_t *data = tmemcalloc(1, s);
     if (data == nullptr)
     {
         return nullptr;
@@ -113,7 +113,7 @@ static void tracePath(AStarCell *destCell, AStarCell **cellMat, AStarPath *path)
         llistAppend(&tracePath, &cell->lnode);
     }
 
-    path->path = calloc(1, sizeof(Position) * tracePath.size);
+    path->path = tmemcalloc(1, sizeof(Position) * tracePath.size);
 
     LNode *node = nullptr;
     int index = tracePath.size - 1;
@@ -231,5 +231,5 @@ void astar(Position startPos, Position destPos, const BoolMat *navGrid, AStarPat
 EXIT:
 
     closedMat = boolMatFree(closedMat);
-    free(cellMat);
+    tmemfree(cellMat);
 }

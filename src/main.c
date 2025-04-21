@@ -95,7 +95,7 @@ int main(void)
                     Position p = path.path[i];
                     world[p.y][p.x] = '3';
                 }
-                free(path.path);
+                tmemfree(path.path);
             }
 
             world[row][col] = '2';
