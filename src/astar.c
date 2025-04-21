@@ -42,9 +42,9 @@ AStarCell **newAStarCellMat(int rows, int cols)
 {
     int s = (sizeof(AStarCell *) * rows) + (sizeof(AStarCell) * rows * cols);
     uint8_t *data = calloc(1, s);
-    if (data == NULL)
+    if (data == nullptr)
     {
-        return NULL;
+        return nullptr;
     }
 
     uint32_t ptrOffset = sizeof(AStarCell *) * rows;
@@ -76,9 +76,9 @@ AStarCell **newAStarCellMat(int rows, int cols)
     return cellMat;
 }
 
-static bool inBounds(Position pos, uint32_t xMax, uint32_t yMax)
+static bool outOfBounds(Position pos, uint32_t xMax, uint32_t yMax)
 {
-    return (0 <= pos.x && pos.x < xMax) && (0 <= pos.y && pos.y < yMax);
+    return !((0 <= pos.x && pos.x < xMax) && (0 <= pos.y && pos.y < yMax));
 }
 
 static bool isClosed(const BoolMat *closedMat, Position pos)
@@ -88,7 +88,7 @@ static bool isClosed(const BoolMat *closedMat, Position pos)
 
 static bool isBlocked(const BoolMat *navGrid, Position pos)
 {
-    return boolMatGet(navGrid, pos.x, pos.y);
+    return boolMatGet(navGrid, pos.x, pos.y) == false;
 }
 
 static float calcHVal(Position p, Position dest)
@@ -130,8 +130,8 @@ static void tracePath(AStarCell *destCell, AStarCell **cellMat, AStarPath *path)
 
 void astar(Position startPos, Position destPos, const BoolMat *navGrid, AStarPath *path)
 {
-    if (!inBounds(startPos, navGrid->rows, navGrid->cols) &&
-        !inBounds(destPos, navGrid->rows, navGrid->cols))
+    if (outOfBounds(startPos, navGrid->rows, navGrid->cols) ||
+        outOfBounds(destPos, navGrid->rows, navGrid->cols))
     {
         return;
     }
@@ -162,12 +162,12 @@ void astar(Position startPos, Position destPos, const BoolMat *navGrid, AStarPat
 
     while (!llistIsEmpty(&openList))
     {
-        AStarCell *p = NULL;
-        LNode *node;
+        AStarCell *p = nullptr;
+        LNode *node = nullptr;
         LListForEach(&openList, node)
         {
             AStarCell *q = LListGetEntry(node, AStarCell);
-            if (p == NULL)
+            if (p == nullptr)
             {
                 p = q;
                 continue;
@@ -194,7 +194,7 @@ void astar(Position startPos, Position destPos, const BoolMat *navGrid, AStarPat
                 .y = pos.y + move->pos.y,
             };
 
-            if (!inBounds(newPos, navGrid->cols, navGrid->rows))
+            if (outOfBounds(newPos, navGrid->cols, navGrid->rows))
             {
                 continue;
             }
