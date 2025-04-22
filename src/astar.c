@@ -6,42 +6,85 @@
 #include "utils.h"
 #include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 
 typedef struct
 {
-    Position parent;
     Position position;
-    float f; // g + h
-    float g; // Distance from starting node
-    float h; // Distance from destination node
+    Position parent;
+    uint32_t f; // g + h
+    uint32_t g; // Distance from starting node
+    uint32_t h; // Distance from destination node
     LNode lnode;
 } AStarCell;
 
 typedef struct
 {
     Position pos;
-    int cost;
+    uint32_t cost;
 } AStarMove;
 
-constexpr int MOVES = 8;
-constexpr AStarMove moves[] = {
-    {{1, 0}, 10},
-    {{0, 1}, 10},
-    {{-1, 0}, 10},
-    {{0, -1}, 10},
-    {{1, 1}, 14},
-    {{1, -1}, 14},
-    {{-1, 1}, 14},
-    {{-1, -1}, 14},
+constexpr static int DIST = 10;
+constexpr static int DISTD = 14;
+
+constexpr static int MOVES = 8;
+constexpr static AStarMove moves[] = {
+    {  {1, 0},  DIST},
+    {  {0, 1},  DIST},
+    { {-1, 0},  DIST},
+    { {0, -1},  DIST},
+    {  {1, 1}, DISTD},
+    { {1, -1}, DISTD},
+    { {-1, 1}, DISTD},
+    {{-1, -1}, DISTD},
 };
 
-AStarCell **newAStarCellMat(int rows, int cols)
+typedef enum
 {
-    int s = (sizeof(AStarCell *) * rows) + (sizeof(AStarCell) * rows * cols);
-    uint8_t *data = tmemcalloc(1, s);
+    HEURISTIC_MANHATTAN,
+    HEURISTIC_DIAGONAL,
+    HEURISTIC_EUCLIDIAN,
+} AStarHeuristic;
+
+constexpr static AStarHeuristic DEFAULT_HEURISTIC = HEURISTIC_EUCLIDIAN;
+
+static int heuristicManhattan(Position p, Position dest)
+{
+    return abs(p.x - dest.x) + abs(p.y - dest.y);
+}
+
+static int heuristicDiagonalDistance(Position p, Position dest)
+{
+    int dx = abs(p.x - dest.x);
+    int dy = abs(p.y - dest.y);
+    return (DIST * (dx + dy)) + ((DISTD - 2 * DIST) * MIN(dx, dy));
+}
+
+static int heuristicEuclidianDistance(Position p, Position dest)
+{
+    int dx = p.x - dest.x;
+    int dy = p.x - dest.x;
+    return (int) sqrt((dx * dx) - (dy * dy));
+}
+
+typedef int (*CalcHDist)(Position p, Position dest);
+
+static CalcHDist getHeuriticsFunction(AStarHeuristic hFunc)
+{
+    switch (hFunc)
+    {
+        case HEURISTIC_MANHATTAN:
+            return heuristicManhattan;
+        case HEURISTIC_DIAGONAL:
+            return heuristicDiagonalDistance;
+        case HEURISTIC_EUCLIDIAN:
+        default:
+            return heuristicEuclidianDistance;
+    }
+}
+
+static AStarCell **newAStarCellMat(uint32_t rows, uint32_t cols)
+{
+    uint8_t *data = tmemcalloc(1, (sizeof(AStarCell *) * rows) + (sizeof(AStarCell) * rows * cols));
     if (data == nullptr)
     {
         return nullptr;
@@ -66,9 +109,9 @@ AStarCell **newAStarCellMat(int rows, int cols)
             cell->position.y = i;
             cell->parent.x = -1;
             cell->parent.y = -1;
-            cell->f = INFINITY;
-            cell->g = INFINITY;
-            cell->h = INFINITY;
+            cell->f = UINT32_MAX;
+            cell->g = UINT32_MAX;
+            cell->h = UINT32_MAX;
             llistInitNode(&cell->lnode, cell);
         }
     }
@@ -88,19 +131,12 @@ static bool isClosed(const BoolMat *closedMat, Position pos)
 
 static bool isBlocked(const BoolMat *navGrid, Position pos)
 {
-    return boolMatGet(navGrid, pos.x, pos.y) == false;
-}
-
-static float calcHVal(Position p, Position dest)
-{
-    float px = p.x - dest.x;
-    float py = p.y - dest.y;
-    return sqrtf((px * px) + (py * py));
+    return !boolMatGet(navGrid, pos.x, pos.y);
 }
 
 static void tracePath(AStarCell *destCell, AStarCell **cellMat, AStarPath *path)
 {
-    LList tracePath = {0};
+    LList tracePath = {};
 
     llistInit(&tracePath);
 
@@ -116,7 +152,7 @@ static void tracePath(AStarCell *destCell, AStarCell **cellMat, AStarPath *path)
     path->path = tmemcalloc(1, sizeof(Position) * tracePath.size);
 
     LNode *node = nullptr;
-    int index = tracePath.size - 1;
+    uint32_t index = tracePath.size - 1;
     LListForEach(&tracePath, node)
     {
         AStarCell *cell = LListGetEntry(node, AStarCell);
@@ -146,6 +182,7 @@ void astar(Position startPos, Position destPos, const BoolMat *navGrid, AStarPat
         return; // Already there
     }
 
+    CalcHDist calcHDist = getHeuriticsFunction(DEFAULT_HEURISTIC);
     BoolMat *closedMat = boolMatNew(navGrid->rows, navGrid->cols, false, true);
     AStarCell **cellMat = newAStarCellMat(navGrid->rows, navGrid->cols);
 
@@ -213,11 +250,11 @@ void astar(Position startPos, Position destPos, const BoolMat *navGrid, AStarPat
                 continue;
             }
 
-            float g = p->g + move->cost;
-            float h = calcHVal(newPos, destPos);
-            float f = g + h;
+            uint32_t g = p->g + move->cost;
+            uint32_t h = calcHDist(newPos, destPos);
+            uint32_t f = g + h;
 
-            if (cell->f == INFINITY || cell->f > f)
+            if (cell->f == UINT32_MAX || cell->f > f)
             {
                 llistAppend(&openList, &cell->lnode);
                 cell->f = f;
@@ -231,5 +268,5 @@ void astar(Position startPos, Position destPos, const BoolMat *navGrid, AStarPat
 EXIT:
 
     closedMat = boolMatFree(closedMat);
-    tmemfree(cellMat);
+    tmemfree((void*)cellMat);
 }

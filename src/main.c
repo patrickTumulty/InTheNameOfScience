@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
 
 float sinwave(float frequency, float phase, float ampliture)
 {
