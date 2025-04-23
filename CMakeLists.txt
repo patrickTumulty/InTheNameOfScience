@@ -24,6 +24,7 @@ include_directories(src)
 set(
     SOURCE_FILES
     src/astar.c
+    src/sim.c
 )
 
 add_executable(${PROJECT_NAME} src/main.c ${SOURCE_FILES})

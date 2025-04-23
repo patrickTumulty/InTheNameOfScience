@@ -1,9 +1,6 @@
 
-#include "astar.h"
-#include "bool_mat.h"
 #include "raylib.h"
 #include "tmem.h"
-#include "utils.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,8 +21,8 @@ typedef struct
 
 Vector2 getRandomPosition(int xMin, int xMax, int yMin, int yMax)
 {
-    float x = (random() % xMax) + xMin;
-    float y = (random() % yMax) + yMin;
+    float x = (float) ((random() % xMax) + xMin);
+    float y = (float) ((random() % yMax) + yMin);
     return (Vector2) {x, y};
 }
 
@@ -34,123 +31,137 @@ void printvec(Vector2 v)
     printf("Vec2 x=%.2f, y=%.2f\n", v.x, v.y);
 }
 
-constexpr int WORLD_HEIGHT = 50;
-constexpr int WORLD_WIDTH = 50;
+static Vector2 cameraTarget = {200, 200};
+static Camera2D camera = {0};
+static float cameraSpeed = 200.0f;
 
-constexpr int TILE_SIZE = 30;
+const static int WORLD_HEIGHT = 50;
+const static int WORLD_WIDTH = 50;
+
+constexpr static int TILE_SIZE = 30;
+
+const static int SCREEN_WIDTH = 1500;
+const static int SCREEN_HEIGHT = 1500;
+
+Vector2 getScreenCenter()
+{
+    return (Vector2) {(float) SCREEN_WIDTH / 2, (float) SCREEN_HEIGHT / 2};
+}
+
+void gameStart()
+{
+    cameraTarget = getScreenCenter();
+    camera.target = cameraTarget;
+    camera.offset = (Vector2) {0, 0};
+    camera.rotation = 0.0f;
+    camera.zoom = 1.125f;
+}
+
+
+void gameUpdate()
+{
+    cameraTarget.x -= (float) IsKeyDown(KEY_A) * (1.0f * GetFrameTime() * cameraSpeed);
+    cameraTarget.x += (float) IsKeyDown(KEY_D) * (1.0f * GetFrameTime() * cameraSpeed);
+    cameraTarget.y -= (float) IsKeyDown(KEY_W) * (1.0f * GetFrameTime() * cameraSpeed);
+    cameraTarget.y += (float) IsKeyDown(KEY_S) * (1.0f * GetFrameTime() * cameraSpeed);
+
+    float wheel = GetMouseWheelMove();
+    if (wheel != 0)
+    {
+        const float zoomIncrement = 0.125f;
+        camera.zoom += (wheel * zoomIncrement);
+        if (camera.zoom < 1.0f)
+        {
+            camera.zoom = 1.0f;
+        }
+
+        if (camera.zoom > 8.0f)
+        {
+            camera.zoom = 8.0f;
+        }
+    }
+
+    camera.target = cameraTarget;
+}
+
+
+const static Color MATERIAL_BLUE_GREY_700 = (Color) {69, 90, 100, 255};
+const static Color MATERIAL_BLUE_GREY_100 = (Color) {207, 216, 220, 255};
+const static Color MATERIAL_BLUE_GREY_200 = (Color) {176, 190, 197, 255};
+
+void gameRender()
+{
+    BeginMode2D(camera);
+
+    float width = (float) GetScreenWidth();
+    float height = (float) GetScreenHeight();
+    camera.offset = (Vector2) {width / 2, height / 2};
+
+
+    for (int i = 0; i < WORLD_HEIGHT; i++)
+    {
+        for (int j = 0; j < WORLD_WIDTH; j++)
+        {
+
+
+            Color color;
+            if (i % 2 == 0)
+            {
+                color = (j % 2 == 0) ? MATERIAL_BLUE_GREY_100 : MATERIAL_BLUE_GREY_200;
+            }
+            else
+            {
+                color = (j % 2 == 0) ? MATERIAL_BLUE_GREY_200 : MATERIAL_BLUE_GREY_100;
+            }
+            DrawRectangle(j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
+        }
+    }
+
+    Rectangle rect;
+    rect.height = TILE_SIZE * WORLD_HEIGHT;
+    rect.width = TILE_SIZE * WORLD_WIDTH;
+    rect.x = 0;
+    rect.y = 0;
+
+    DrawRectangleLinesEx(rect, 3.0f, MATERIAL_BLUE_GREY_700);
+
+    EndMode2D();
+}
+
+void gameShutdown()
+{
+}
 
 int main(void)
 {
-    const int screenWidth = 1500;
-    const int screenHeight = 1500;
-
     tMemInit();
 
-    InitWindow(screenWidth, screenHeight, "In the Name of Science!");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "In the Name of Science!");
 
     SetWindowState(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
-    SetWindowMinSize(screenWidth, screenHeight);
-
-    BoolMat *navGrid = boolMatNew(WORLD_HEIGHT, WORLD_WIDTH, true, false);
-
-    char world[WORLD_HEIGHT][WORLD_WIDTH] = {0};
+    SetWindowMinSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     SetTargetFPS(60);
 
-    Position startingPoint = {1, 1};
+    gameStart();
 
     while (!WindowShouldClose())
     {
-        Vector2 mousePosition = GetMousePosition();
-        int row = mousePosition.y / TILE_SIZE;
-        int col = mousePosition.x / TILE_SIZE;
-
-        if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
-        {
-            world[row][col] = 'X';
-            boolMatSet(navGrid, col, row, false);
-        }
-        else if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-        {
-            // Clear path
-            for (int i = 0; i < WORLD_HEIGHT; i++)
-            {
-                for (int j = 0; j < WORLD_WIDTH; j++)
-                {
-                    if (world[i][j] == '3' || world[i][j] == '2')
-                    {
-                        world[i][j] = 0;
-                    }
-                }
-            }
-
-
-            AStarPath path = {};
-
-            astar(startingPoint, (Position) {.x = col, .y = row}, navGrid, &path);
-
-            if (path.path != NULL || path.pathLen != 0)
-            {
-                for (int i = 0; i < path.pathLen; i++)
-                {
-                    Position p = path.path[i];
-                    world[p.y][p.x] = '3';
-                }
-                tmemfree(path.path);
-            }
-
-            world[row][col] = '2';
-        }
-
-        world[startingPoint.y][startingPoint.x] = '1';
+        gameUpdate();
 
         BeginDrawing();
 
         ClearBackground(RAYWHITE);
 
-        for (int i = 0; i < WORLD_HEIGHT; i++)
-        {
-            for (int j = 0; j < WORLD_WIDTH; j++)
-            {
-                Color color;
-
-                if (boolMatGet(navGrid, j, i) == 0)
-                {
-                    color = BLACK;
-                }
-                else if (world[i][j] == '1')
-                {
-                    color = RED;
-                }
-                else if (world[i][j] == '2')
-                {
-                    color = GREEN;
-                }
-                else if (world[i][j] == '3')
-                {
-                    color = BLUE;
-                }
-                else
-                {
-                    if (i % 2 == 0)
-                    {
-                        color = (j % 2 == 0) ? WHITE : LIGHTGRAY;
-                    }
-                    else
-                    {
-                        color = (j % 2 == 0) ? LIGHTGRAY : WHITE;
-                    }
-                }
-                DrawRectangle(j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
-            }
-        }
+        gameRender();
 
         EndDrawing();
     }
 
+    gameShutdown();
+
     CloseWindow();
 
-    navGrid = boolMatFree(navGrid);
     tMemDestroy();
 
     return 0;
