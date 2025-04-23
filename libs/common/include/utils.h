@@ -29,6 +29,7 @@ typedef enum
     ERROR = -1,
     MEM_ALLOC_ERROR = -2,
     BAD_PARAM = -3,
+    OUT_OF_BOUNDS = -4,
 } Status;
 
 #endif // UTILS_H

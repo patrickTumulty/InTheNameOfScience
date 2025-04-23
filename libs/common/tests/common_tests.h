@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 void registerLinkedListTests(void);
+void registerArrayListTests(void);
 void registerBoolMatTests(void);
 void registerTMemTests(void);
 

@@ -10,6 +10,7 @@ int main()
     CU_initialize_registry();
 
     registerLinkedListTests();
+    registerArrayListTests();
     registerBoolMatTests();
     registerTMemTests();
 

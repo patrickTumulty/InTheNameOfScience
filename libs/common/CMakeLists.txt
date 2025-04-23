@@ -11,6 +11,7 @@ set(
     src/bool_mat.c
     src/utils.c
     src/tmem.c
+    src/array_list.c
 )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
@@ -28,7 +29,8 @@ pkg_check_modules(CUNIT REQUIRED cunit)
 
 add_executable(${PROJECT_NAME}_test
     tests/main.c
-    tests/llist_tests.c
+    tests/linked_list_tests.c
+    tests/array_list_tests.c
     tests/boolmat_tests.c
     tests/tmem_tests.c
 )
