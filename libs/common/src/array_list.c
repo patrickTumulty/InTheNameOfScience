@@ -1,31 +1,49 @@
 
 #include "array_list.h"
+#include "common_types.h"
 #include "tmem.h"
+#include "utils.h"
 #include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
 
-int arrayListNew(ArrayList *alist, uint32_t length, uint32_t size)
+Rc alistNew(AList *alist, u32 length, u32 size)
 {
-    size_t s = (uint64_t) size * length;
+    size_t s = (u64) size * length;
     alist->data = tmemcalloc(1, s);
     if (alist->data == nullptr)
     {
-        return -1;
+        return RC_MEM_ALLOC_ERROR;
     }
     alist->dataSize = s;
     alist->elementSize = (int) size;
     alist->length = (int) length;
-    return 0;
+    return RC_OK;
 }
 
-int arrayListAppend(ArrayList *alist, void *data)
+Rc alistResize(AList *alist, u32 length)
+{
+    u64 newSize = (u64) length * alist->elementSize;
+    uint8_t *newBuffer = tmemcalloc(1, newSize);
+    if (newBuffer == nullptr)
+    {
+        return RC_MEM_ALLOC_ERROR;
+    }
+    memcpy(newBuffer, alist->data, MIN(alist->dataSize, newSize));
+    tmemfree(alist->data);
+    alist->data = newBuffer;
+    alist->dataSize = newSize;
+    alist->length = length;
+    return RC_OK;
+}
+
+Rc alistAppend(AList *alist, const void *data)
 {
     size_t newSize = alist->dataSize + alist->elementSize;
     uint8_t *newBuffer = tmemcalloc(1, newSize);
     if (newBuffer == nullptr)
     {
-        return -1;
+        return RC_MEM_ALLOC_ERROR;
     }
     memcpy(newBuffer, alist->data, alist->dataSize);
     memcpy(newBuffer + alist->dataSize, data, alist->elementSize);
@@ -33,10 +51,10 @@ int arrayListAppend(ArrayList *alist, void *data)
     alist->data = newBuffer;
     alist->dataSize += alist->elementSize;
     alist->length++;
-    return 0;
+    return RC_OK;
 }
 
-void *arrayListGet(ArrayList *alist, int index)
+void *alistGet(AList *alist, int index)
 {
     if (0 > index || index >= alist->length)
     {
@@ -46,23 +64,23 @@ void *arrayListGet(ArrayList *alist, int index)
     return alist->data + offset;
 }
 
-int arrayListSet(ArrayList *alist, int index, void *data)
+Rc alistSet(AList *alist, int index, const void *data)
 {
     if (0 > index || index >= alist->length)
     {
-        return -1;
+        return RC_OUT_OF_BOUNDS;
     }
-    uint32_t offset = alist->elementSize * index;
+    u32 offset = alist->elementSize * index;
     memcpy(alist->data + offset, data, alist->elementSize);
-    return 0;
+    return RC_OK;
 }
 
-int arrayListLength(ArrayList *alist)
+u32 alistLength(AList *alist)
 {
     return alist->length;
 }
 
-void arrayListFree(ArrayList *alist)
+void alistFree(AList *alist)
 {
     tmemfree(alist->data);
     alist->data = nullptr;

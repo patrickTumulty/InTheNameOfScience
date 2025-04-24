@@ -19,7 +19,6 @@ typedef struct {
     uint32_t size;
 } LList;
 
-
 #define LListForEach(LL, IT) for ((IT) = (LL)->head; (IT) != NULL; (IT) = (IT)->next)  
 
 #define LListGetEntry(NODE, T) ((T *) (NODE)->data)

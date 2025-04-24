@@ -2,20 +2,22 @@
 #ifndef ARRAY_LIST_H
 #define ARRAY_LIST_H
 
+#include "common_types.h"
 #include <stdint.h>
 
 typedef struct {
     void *data;
-    uint64_t dataSize;
-    uint32_t elementSize;
-    uint32_t length;
-} ArrayList;
+    u64 dataSize;
+    u32 elementSize;
+    u32 length;
+} AList;
 
-int arrayListNew(ArrayList *alist, uint32_t length, uint32_t size);
-int arrayListAppend(ArrayList *alist, void *data);
-void *arrayListGet(ArrayList *alist, int index);
-int arrayListSet(ArrayList *alist, int index, void *data);
-int arrayListLength(ArrayList *alist);
-void arrayListFree(ArrayList *alist);
+Rc alistNew(AList *alist, u32 length, u32 size);
+Rc alistAppend(AList *alist, const void *data);
+Rc alistResize(AList *alist, u32 length);
+void *alistGet(AList *alist, int index);
+Rc alistSet(AList *alist, int index, const void *data);
+u32 alistLength(AList *alist);
+void alistFree(AList *alist);
 
 #endif

@@ -3,7 +3,7 @@
 #define ASTAR_H
 
 #include "bool_mat.h"
-#include "utils.h"
+#include "common_types.h"
 #include <stdbool.h>
 #include <stdint.h>
 
