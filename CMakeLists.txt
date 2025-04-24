@@ -25,6 +25,10 @@ set(
     SOURCE_FILES
     src/astar.c
     src/sim.c
+    src/object_registry.c
+    src/system.c
+    src/components.c
+    src/entity.c
 )
 
 add_executable(${PROJECT_NAME} src/main.c ${SOURCE_FILES})
