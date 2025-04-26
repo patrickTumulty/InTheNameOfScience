@@ -19,9 +19,19 @@ add_subdirectory(libs/common)
 # Generate compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include_directories(src)
+include_directories(
+    src/
+    src/pray_engine/
+    src/systems/
+    src/utils/
+)
 
-file(GLOB SOURCE_FILES src/*.c)
+file(GLOB SOURCE_FILES 
+    src/*.c
+    src/pray_engine/*.c
+    src/systems/*.c
+    src/utils/*.c
+)
 
 add_executable(${PROJECT_NAME} src/main.c ${SOURCE_FILES})
 
