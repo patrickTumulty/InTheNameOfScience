@@ -6,6 +6,7 @@
 #include "raylib.h"
 #include "system.h"
 #include "tmem.h"
+#include "world_system.h"
 #include <math.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -42,6 +43,7 @@ int main(void)
 
     SetTargetFPS(60);
 
+    registerWorldSystem();
     registerCameraSystem();
     registerPathingSystem();
 

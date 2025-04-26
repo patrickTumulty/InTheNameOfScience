@@ -7,9 +7,12 @@
 constexpr static ComponentInitializer cinfoArray[] = {
     {   CID_PLAYER,                 0, nullptr, nullptr},
     {CID_TRANSFORM, sizeof(Transform), nullptr, nullptr},
+    {    CID_WORLD,     sizeof(World), nullptr, nullptr},
 };
 
 const static u32 cinfoArrayLen = sizeof(cinfoArray) / sizeof(ComponentInitializer);
+
+
 
 ComponentInitializer getComponentInitializer(ComponentID cid)
 {
@@ -23,4 +26,3 @@ ComponentInitializer getComponentInitializer(ComponentID cid)
     }
     return (ComponentInitializer) {CID_EMPTY, 0, nullptr, nullptr};
 }
-

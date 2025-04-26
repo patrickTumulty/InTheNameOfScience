@@ -17,7 +17,7 @@ Entity *entityNew(ComponentID *cids, u32 cidsLen)
         size += getComponentInitializer(cids[i]).size;
     }
 
-    Entity *newEntity = tMemCalloc(1, size);
+    Entity *newEntity = tmemcalloc(1, size);
     if (newEntity == nullptr)
     {
         return nullptr;
