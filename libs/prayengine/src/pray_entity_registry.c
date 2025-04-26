@@ -1,9 +1,9 @@
 
-#include "entity_registry.h"
+#include "pray_entity_registry.h"
 #include "array_list.h"
 #include "common_types.h"
-#include "entity.h"
 #include "linked_list.h"
+#include "pray_entity.h"
 #include <raylib.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -61,35 +61,46 @@ Rc entityRegistryUnregister(Entity *entity)
     return RC_NOT_FOUND;
 }
 
-Entity *entityRegistryLookupFirst(ComponentID *cids, u32 cidsLen)
+Entity *entityRegistryLookupFirst(u32 componentsCount, ...)
 {
+    va_list args;
+    va_start(args, componentsCount);
+
+    Entity *entity = nullptr;
     for (int i = 0; i < entityList.length; i++)
     {
         AListPtr *ptr = alistGet(&entityList, i);
-        Entity *entity = ptr->ptr;
+        entity = ptr->ptr;
         if (entity == nullptr)
         {
             continue;
         }
         int matches = 0;
-        for (int j = 0; j < cidsLen; j++)
+        for (int j = 0; j < componentsCount; j++)
         {
-            void *comp = entityGetComponent(entity, cids[j]);
+            u32 componentID = va_arg(args, u32);
+            void *comp = entityGetComponent(entity, componentID);
             if (comp != nullptr)
             {
                 matches++;
             }
         }
-        if (matches == cidsLen)
+        if (matches == componentsCount)
         {
-            return entity;
+            goto EXIT;
         }
     }
-    return nullptr;
+
+EXIT:
+    va_end(args);
+    return entity;
 }
 
-Rc entityRegistryLookupAll(LList *llist, ComponentID *cids, u32 cidsLen)
+Rc entityRegistryLookupAll(LList *llist, u32 componentsCount, ...)
 {
+    va_list args;
+    va_start(args, componentsCount);
+
     llistInit(llist);
     for (int i = 0; i < entityList.length; i++)
     {
@@ -98,19 +109,25 @@ Rc entityRegistryLookupAll(LList *llist, ComponentID *cids, u32 cidsLen)
         {
             continue;
         }
+
         int matches = 0;
-        for (int j = 0; j < cidsLen; j++)
+        for (int j = 0; j < componentsCount; j++)
         {
-            void *comp = entityGetComponent(entity, cids[j]);
+            u32 componentID = va_arg(args, u32);
+            void *comp = entityGetComponent(entity, componentID);
             if (comp != nullptr)
             {
                 matches++;
             }
         }
-        if (matches == cidsLen)
+
+        if (matches == componentsCount)
         {
             llistAppend(llist, &entity->lnode);
         }
     }
+
+    va_end(args);
+
     return RC_OK;
 }

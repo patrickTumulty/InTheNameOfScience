@@ -18,6 +18,7 @@ static bool llistContainsNode(LList *llist, LNode *lnode)
 void llistInit(LList *llist)
 {
     llist->head = nullptr;
+    llist->tail = nullptr;
     llist->size = 0;
 }
 

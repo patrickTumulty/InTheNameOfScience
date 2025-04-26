@@ -1,12 +1,12 @@
 
 #include "world_system.h"
 #include "bool_mat.h"
-#include "components.h"
-#include "entity.h"
-#include "entity_registry.h"
+#include "pray_components.h"
+#include "pray_entity.h"
+#include "pray_entity_registry.h"
 #include "pray_colors.h"
 #include "pray_globals.h"
-#include "system.h"
+#include "pray_system.h"
 #include "tmem.h"
 
 // static BoolMat *navGrid;

@@ -13,7 +13,25 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_definitions(TMEM_TRACK)
 endif()
 
-add_subdirectory(libs/raylib)
+find_package(raylib QUIET)
+if (NOT raylib_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+        raylib
+        GIT_REPOSITORY https://github.com/raysan5/raylib.git
+        GIT_TAG 5.0
+    )
+    FetchContent_GetProperties(raylib)
+    if (NOT raylib_POPULATED) # Have we downloaded raylib yet?
+        set(FETCHCONTENT_QUIET NO)
+        FetchContent_Populate(raylib)
+        set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+        set(BUILD_GAMES    OFF CACHE BOOL "" FORCE)
+        add_subdirectory(${raylib_SOURCE_DIR} ${raylib_BINARY_DIR})
+    endif()
+endif()
+
+add_subdirectory(libs/prayengine)
 add_subdirectory(libs/common)
 
 # Generate compile_commands.json
@@ -21,19 +39,17 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include_directories(
     src/
-    src/pray_engine/
     src/systems/
     src/utils/
 )
 
 file(GLOB SOURCE_FILES 
     src/*.c
-    src/pray_engine/*.c
     src/systems/*.c
     src/utils/*.c
 )
 
 add_executable(${PROJECT_NAME} src/main.c ${SOURCE_FILES})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE raylib common)
+target_link_libraries(${PROJECT_NAME} PRIVATE raylib common prayengine)
 

@@ -1,8 +1,6 @@
 
-#include "system.h"
+#include "pray_system.h"
 #include "array_list.h"
-#include "tmem.h"
-#include <stdlib.h>
 
 static AList systems;
 

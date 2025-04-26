@@ -4,10 +4,10 @@
 #include "bool_mat.h"
 #include "camera_system.h"
 #include "common_types.h"
-#include "entity_registry.h"
+#include "pray_entity_registry.h"
 #include "linked_list.h"
 #include "pray_globals.h"
-#include "system.h"
+#include "pray_system.h"
 #include "tmem.h"
 #include <raylib.h>
 #include <stdio.h>

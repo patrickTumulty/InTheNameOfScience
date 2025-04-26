@@ -4,8 +4,6 @@
 
 #include <raylib.h>
 
-Camera2D getCamera();
-
 void registerCameraSystem();
 
 #endif

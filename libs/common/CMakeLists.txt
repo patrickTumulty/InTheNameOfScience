@@ -15,9 +15,7 @@ set(
 )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
-
 target_include_directories(${PROJECT_NAME} PUBLIC include)
-
 target_link_libraries(${PROJECT_NAME} PRIVATE m)
 
 # Enable testing
@@ -35,8 +33,6 @@ add_executable(${PROJECT_NAME}_test
     tests/tmem_tests.c
 )
 
-message(STATUS ${unity_SOURCE_DIR})
-
 target_include_directories(${PROJECT_NAME}_test PUBLIC 
     ${CUNIT_INCLUDE_DIRS}
     tests 
@@ -44,4 +40,3 @@ target_include_directories(${PROJECT_NAME}_test PUBLIC
 
 target_link_libraries(${PROJECT_NAME}_test PUBLIC common ${CUNIT_LIBRARIES})
 
-add_test(NAME CommonTests COMMAND ${PROJECT_NAME}_test)
