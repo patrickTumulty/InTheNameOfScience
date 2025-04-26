@@ -2,14 +2,14 @@
 #include "pathfinding_system.h"
 #include "astar.h"
 #include "bool_mat.h"
+#include "camera_system.h"
+#include "pray_colors.h"
+#include "pray_globals.h"
 #include "system.h"
 #include "tmem.h"
 #include <raylib.h>
 #include <stdio.h>
 
-constexpr static int WORLD_HEIGHT = 50;
-constexpr static int WORLD_WIDTH = 50;
-constexpr static int TILE_SIZE = 30;
 static BoolMat *navGrid;
 static char world[WORLD_HEIGHT][WORLD_WIDTH] = {0};
 static Position startingPoint = {1, 1};
@@ -26,17 +26,21 @@ static void close()
 
 static void gameUpdate()
 {
-    Vector2 mousePosition = GetMousePosition();
-    int row = mousePosition.y / TILE_SIZE;
-    int col = mousePosition.x / TILE_SIZE;
-
     if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
     {
+        Vector2 position = GetScreenToWorld2D(GetMousePosition(), getCamera());
+        int row = (int) position.y / TILE_SIZE;
+        int col = (int) position.x / TILE_SIZE;
+
         world[row][col] = 'X';
         boolMatSet(navGrid, col, row, false);
     }
     else if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
+        Vector2 position = GetScreenToWorld2D(GetMousePosition(), getCamera());
+        int row = (int) position.y / TILE_SIZE;
+        int col = (int) position.x / TILE_SIZE;
+
         // Clear path
         for (int i = 0; i < WORLD_HEIGHT; i++)
         {
@@ -97,16 +101,23 @@ static void renderUpdate()
             {
                 if (i % 2 == 0)
                 {
-                    color = (j % 2 == 0) ? WHITE : LIGHTGRAY;
+                    color = (j % 2 == 0) ? MATERIAL_BLUE_GREY_100 : MATERIAL_BLUE_GREY_200;
                 }
                 else
                 {
-                    color = (j % 2 == 0) ? LIGHTGRAY : WHITE;
+                    color = (j % 2 == 0) ? MATERIAL_BLUE_GREY_200 : MATERIAL_BLUE_GREY_100;
                 }
             }
             DrawRectangle(j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
         }
     }
+
+    Rectangle rect;
+    rect.height = TILE_SIZE * WORLD_HEIGHT;
+    rect.width = TILE_SIZE * WORLD_WIDTH;
+    rect.x = 0;
+    rect.y = 0;
+    DrawRectangleLinesEx(rect, 3.0f, MATERIAL_BLUE_GREY_700);
 }
 
 void registerPathingSystem()
@@ -114,7 +125,7 @@ void registerPathingSystem()
     System *system = systemNew();
     snprintf(system->systemName, sizeof(system->systemName), "Pathfinding");
     system->start = start;
-    system->close = close;
+    system->stop = close;
     system->gameUpdate = gameUpdate;
-    system->renderUpdate = renderUpdate;
+    system->renderUpdateWorldSpace = renderUpdate;
 }

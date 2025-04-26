@@ -3,7 +3,6 @@
 #define PATHFINDING_SYSTEM_H
 
 
-
 void registerPathingSystem();
 
 

@@ -10,9 +10,10 @@ typedef struct
     bool initialized;
     bool started;
     void (*start)(void);
-    void (*close)(void);
+    void (*stop)(void);
     void (*gameUpdate)(void);
-    void (*renderUpdate)(void);
+    void (*renderUpdateWorldSpace)(void);
+    void (*renderUpdateScreenSpace)(void);
 } System;
 
 void systemNoop(void);
@@ -23,5 +24,11 @@ void systemsDestroy();
 AList *systemsGet();
 Rc systemsAdd(System *system);
 Rc systemsRemove(System *system);
+
+void systemsRunStart();
+void systemsRunStop();
+void systemsRunGameUpdate();
+void systemsRunRenderUpdateWorldSpace();
+void systemsRunRenderUpdateScreenSpace();
 
 #endif

@@ -21,16 +21,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include_directories(src)
 
-set(
-    SOURCE_FILES
-    src/astar.c
-    src/sim.c
-    src/entity_registry.c
-    src/pathfinding_system.c
-    src/system.c
-    src/components.c
-    src/entity.c
-)
+file(GLOB SOURCE_FILES src/*.c)
 
 add_executable(${PROJECT_NAME} src/main.c ${SOURCE_FILES})
 

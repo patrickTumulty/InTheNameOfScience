@@ -4,7 +4,7 @@
 #include "tmem.h"
 #include <stdlib.h>
 
-static AList systemsList;
+static AList systems;
 
 
 void systemNoop(void)
@@ -14,10 +14,11 @@ void systemNoop(void)
 
 static void clearSystem(System *system)
 {
-    system->close = systemNoop;
+    system->stop = systemNoop;
     system->start = systemNoop;
     system->gameUpdate = systemNoop;
-    system->renderUpdate = systemNoop;
+    system->renderUpdateWorldSpace = systemNoop;
+    system->renderUpdateScreenSpace = systemNoop;
     system->initialized = false;
     system->started = false;
     system->systemName[0] = '\0';
@@ -25,45 +26,42 @@ static void clearSystem(System *system)
 
 static System *getUninitializedSystemPointer()
 {
-    for (int i = 0; i < systemsList.length; i++)
+    for (int i = 0; i < systems.length; i++)
     {
-        System *system = alistGet(&systemsList, i);
-        if (!system->initialized) 
+        System *system = alistGet(&systems, i);
+        if (!system->initialized)
         {
+            clearSystem(system);
+            system->initialized = true;
             return system;
         }
     }
-    u32 len = systemsList.length;
-    alistResize(&systemsList, len + 1);
-    return alistGet(&systemsList, (int) len);
+    u32 len = systems.length;
+    alistResize(&systems, len + 1);
+    System *system = alistGet(&systems, (int) len);
+    clearSystem(system);
+    system->initialized = true;
+    return system;
 }
 
 System *systemNew()
 {
-    System *newSystem = getUninitializedSystemPointer();
-    if (newSystem == nullptr)
-    {
-        return nullptr;
-    }
-
-    clearSystem(newSystem);
-
-    return newSystem;
+    return getUninitializedSystemPointer();
 }
 
 void systemsInit()
 {
-    alistNew(&systemsList, 0, sizeof(System));
+    alistNew(&systems, 0, sizeof(System));
 }
 
 void systemsDestroy()
 {
-    alistFree(&systemsList);
+    alistFree(&systems);
 }
 
 AList *systemsGet()
 {
-    return &systemsList;
+    return &systems;
 }
 
 Rc systemsAdd(System *system)
@@ -74,4 +72,49 @@ Rc systemsAdd(System *system)
 Rc systemsRemove(System *system)
 {
     // TODO
+}
+
+void systemsRunStart()
+{
+    for (int i = 0; i < systems.length; i++)
+    {
+        System *system = alistGet(&systems, i);
+        system->start();
+    }
+}
+
+void systemsRunStop()
+{
+    for (int i = 0; i < systems.length; i++)
+    {
+        System *system = alistGet(&systems, i);
+        system->stop();
+    }
+}
+
+void systemsRunGameUpdate()
+{
+    for (int i = 0; i < systems.length; i++)
+    {
+        System *system = alistGet(&systems, i);
+        system->gameUpdate();
+    }
+}
+
+void systemsRunRenderUpdateWorldSpace()
+{
+    for (int i = 0; i < systems.length; i++)
+    {
+        System *system = alistGet(&systems, i);
+        system->renderUpdateWorldSpace();
+    }
+}
+
+void systemsRunRenderUpdateScreenSpace()
+{
+    for (int i = 0; i < systems.length; i++)
+    {
+        System *system = alistGet(&systems, i);
+        system->renderUpdateScreenSpace();
+    }
 }
