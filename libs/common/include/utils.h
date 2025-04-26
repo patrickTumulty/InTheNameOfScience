@@ -2,6 +2,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include "common_types.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -17,5 +18,6 @@
 
 void hexdump(uint8_t *buf, uint32_t bufLen);
 
+const char *rc2str(Rc rc);
 
 #endif // UTILS_H

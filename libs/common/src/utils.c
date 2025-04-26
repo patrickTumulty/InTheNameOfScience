@@ -29,3 +29,17 @@ void hexdump(uint8_t *buf, uint32_t bufLen)
         printf("\n");
     }
 }
+
+
+const char *rc2str(Rc rc)
+{
+    switch (rc) {
+        case RC_OK: return "OK";
+        case RC_ERROR: return "ERROR";
+        case RC_MEM_ALLOC_ERROR: return "MEM_ALLOC_ERROR";
+        case RC_BAD_PARAM: return "BAD_PARAM";
+        case RC_OUT_OF_BOUNDS: return "OUT_OF_BOUNDS";
+        case RC_NOT_FOUND: return "NOT_FOUND";
+        default: return "UNKNOWN";
+    }
+}

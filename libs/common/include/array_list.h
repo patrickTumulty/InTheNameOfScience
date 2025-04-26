@@ -5,6 +5,16 @@
 #include "common_types.h"
 #include <stdint.h>
 
+/**
+ * Helpful struct for accessing an alist 
+ * element that is just a pointer
+ */
+typedef struct {
+    void *ptr;
+} AListPtr;
+
+#define alistptr(ptr) &(AListPtr){ (ptr) }
+
 typedef struct {
     void *data;
     u64 dataSize;

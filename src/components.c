@@ -23,3 +23,4 @@ ComponentInitializer getComponentInitializer(ComponentID cid)
     }
     return (ComponentInitializer) {CID_EMPTY, 0, nullptr, nullptr};
 }
+

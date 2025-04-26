@@ -16,6 +16,7 @@ typedef enum
     RC_MEM_ALLOC_ERROR = -2,
     RC_BAD_PARAM = -3,
     RC_OUT_OF_BOUNDS = -4,
+    RC_NOT_FOUND = -5,
 } Rc;
 
 typedef uint8_t u8; 

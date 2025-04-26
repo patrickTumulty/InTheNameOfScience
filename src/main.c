@@ -1,5 +1,9 @@
 
+#include "array_list.h"
+#include "entity_registry.h"
+#include "pathfinding_system.h"
 #include "raylib.h"
+#include "system.h"
 #include "tmem.h"
 #include <math.h>
 #include <stdio.h>
@@ -91,41 +95,41 @@ const static Color MATERIAL_BLUE_GREY_200 = (Color) {176, 190, 197, 255};
 
 void gameRender()
 {
-    BeginMode2D(camera);
-
-    float width = (float) GetScreenWidth();
-    float height = (float) GetScreenHeight();
-    camera.offset = (Vector2) {width / 2, height / 2};
-
-
-    for (int i = 0; i < WORLD_HEIGHT; i++)
-    {
-        for (int j = 0; j < WORLD_WIDTH; j++)
-        {
-
-
-            Color color;
-            if (i % 2 == 0)
-            {
-                color = (j % 2 == 0) ? MATERIAL_BLUE_GREY_100 : MATERIAL_BLUE_GREY_200;
-            }
-            else
-            {
-                color = (j % 2 == 0) ? MATERIAL_BLUE_GREY_200 : MATERIAL_BLUE_GREY_100;
-            }
-            DrawRectangle(j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
-        }
-    }
-
-    Rectangle rect;
-    rect.height = TILE_SIZE * WORLD_HEIGHT;
-    rect.width = TILE_SIZE * WORLD_WIDTH;
-    rect.x = 0;
-    rect.y = 0;
-
-    DrawRectangleLinesEx(rect, 3.0f, MATERIAL_BLUE_GREY_700);
-
-    EndMode2D();
+    // BeginMode2D(camera);
+    //
+    // float width = (float) GetScreenWidth();
+    // float height = (float) GetScreenHeight();
+    // camera.offset = (Vector2) {width / 2, height / 2};
+    //
+    //
+    // for (int i = 0; i < WORLD_HEIGHT; i++)
+    // {
+    //     for (int j = 0; j < WORLD_WIDTH; j++)
+    //     {
+    //
+    //
+    //         Color color;
+    //         if (i % 2 == 0)
+    //         {
+    //             color = (j % 2 == 0) ? MATERIAL_BLUE_GREY_100 : MATERIAL_BLUE_GREY_200;
+    //         }
+    //         else
+    //         {
+    //             color = (j % 2 == 0) ? MATERIAL_BLUE_GREY_200 : MATERIAL_BLUE_GREY_100;
+    //         }
+    //         DrawRectangle(j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
+    //     }
+    // }
+    //
+    // Rectangle rect;
+    // rect.height = TILE_SIZE * WORLD_HEIGHT;
+    // rect.width = TILE_SIZE * WORLD_WIDTH;
+    // rect.x = 0;
+    // rect.y = 0;
+    //
+    // DrawRectangleLinesEx(rect, 3.0f, MATERIAL_BLUE_GREY_700);
+    //
+    // EndMode2D();
 }
 
 void gameShutdown()
@@ -135,6 +139,8 @@ void gameShutdown()
 int main(void)
 {
     tMemInit();
+    entityRegistryInit();
+    systemsInit();
 
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "In the Name of Science!");
 
@@ -143,25 +149,54 @@ int main(void)
 
     SetTargetFPS(60);
 
-    gameStart();
+    registerPathingSystem();
+
+    AList *systems = systemsGet();
+    for (int i = 0; i < systems->length; i++)
+    {
+        System *system = alistGet(systems, i);
+        system->start();
+    }
+
+    // gameStart();
 
     while (!WindowShouldClose())
     {
-        gameUpdate();
+        // gameUpdate();
+
+        for (int i = 0; i < systems->length; i++)
+        {
+            System *system = alistGet(systems, i);
+            system->gameUpdate();
+        }
 
         BeginDrawing();
 
         ClearBackground(RAYWHITE);
 
-        gameRender();
+        for (int i = 0; i < systems->length; i++)
+        {
+            System *system = alistGet(systems, i);
+            system->renderUpdate();
+        }
+
+        // gameRender();
 
         EndDrawing();
     }
 
     gameShutdown();
 
+    for (int i = 0; i < systems->length; i++)
+    {
+        System *system = alistGet(systems, i);
+        system->close();
+    }
+
     CloseWindow();
 
+    entityRegistryDestroy();
+    systemsDestroy();
     tMemDestroy();
 
     return 0;

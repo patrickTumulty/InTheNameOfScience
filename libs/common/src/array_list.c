@@ -46,7 +46,14 @@ Rc alistAppend(AList *alist, const void *data)
         return RC_MEM_ALLOC_ERROR;
     }
     memcpy(newBuffer, alist->data, alist->dataSize);
-    memcpy(newBuffer + alist->dataSize, data, alist->elementSize);
+    if (data == nullptr)
+    {
+        memset(newBuffer + alist->dataSize, 0, alist->elementSize);
+    }
+    else
+    {
+        memcpy(newBuffer + alist->dataSize, data, alist->elementSize);
+    }
     tmemfree(alist->data);
     alist->data = newBuffer;
     alist->dataSize += alist->elementSize;
@@ -71,7 +78,14 @@ Rc alistSet(AList *alist, int index, const void *data)
         return RC_OUT_OF_BOUNDS;
     }
     u32 offset = alist->elementSize * index;
-    memcpy(alist->data + offset, data, alist->elementSize);
+    if (data == nullptr)
+    {
+        memset(alist->data + offset, 0, alist->elementSize);
+    }
+    else
+    {
+        memcpy(alist->data + offset, data, alist->elementSize);
+    }
     return RC_OK;
 }
 

@@ -25,4 +25,5 @@ typedef struct {
 
 ComponentInitializer getComponentInitializer(ComponentID cid);
 
+
 #endif // COMPONENTS_H

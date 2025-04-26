@@ -25,7 +25,8 @@ set(
     SOURCE_FILES
     src/astar.c
     src/sim.c
-    src/object_registry.c
+    src/entity_registry.c
+    src/pathfinding_system.c
     src/system.c
     src/components.c
     src/entity.c

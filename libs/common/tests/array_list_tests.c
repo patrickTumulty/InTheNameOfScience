@@ -5,6 +5,7 @@
 #include "tmem.h"
 #include <CUnit/Basic.h>
 #include <CUnit/CUnit.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 
@@ -202,6 +203,43 @@ void alistResizeTest(void)
     CU_ASSERT_EQUAL(stats.current, 0);
 }
 
+void alistSetNullTest(void)
+{
+    AList alist = {};
+    alistNew(&alist, 5, sizeof(AListPtr));
+
+    CU_ASSERT_EQUAL(alist.dataSize, sizeof(AListPtr) * 5);
+    CU_ASSERT_EQUAL(alist.elementSize, sizeof(AListPtr));
+    CU_ASSERT_EQUAL(alist.length, 5);
+
+    for (int i = 0; i < alist.length; i++)
+    {
+        AListPtr *ptr =  alistGet(&alist, i);
+        CU_ASSERT_PTR_NULL(ptr->ptr);
+    }
+
+    for (int i = 0; i < alist.length; i++)
+    {
+        u64 *number = tmemcalloc(1, sizeof(u64));
+        Rc rc = alistSet(&alist, i, alistptr(number));
+        CU_ASSERT_EQUAL(rc, RC_OK);
+    }
+
+    for (int i = 0; i < alist.length; i++)
+    {
+        AListPtr *ptr =  alistGet(&alist, i);
+        CU_ASSERT_PTR_NOT_NULL(ptr->ptr);
+        tmemfree(ptr->ptr);
+        Rc rc = alistSet(&alist, i, nullptr);
+        CU_ASSERT_EQUAL(rc, RC_OK);
+    }
+
+    alistFree(&alist);
+
+    auto stats = tMemGetStats();
+    CU_ASSERT_EQUAL(stats.current, 0);
+}
+
 void registerArrayListTests(void)
 {
     CU_pSuite suite = CU_add_suite("Array List Tests", setup, teardown);
@@ -210,4 +248,5 @@ void registerArrayListTests(void)
     CU_add_test(suite, "Append test", alistAppendTest);
     CU_add_test(suite, "Out-of-Bounds test", alistOutOfBoundsTest);
     CU_add_test(suite, "Resize array test", alistResizeTest);
+    CU_add_test(suite, "Setting Null", alistSetNullTest);
 }
