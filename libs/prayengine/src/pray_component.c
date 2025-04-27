@@ -1,5 +1,5 @@
 
-#include "pray_components.h"
+#include "pray_component.h"
 #include "common_types.h"
 #include "linked_list.h"
 #include "tmem.h"

@@ -3,20 +3,21 @@
 #include "array_list.h"
 #include "common_types.h"
 #include "linked_list.h"
+#include "pointer_list.h"
 #include "pray_entity.h"
 #include <raylib.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <stdio.h>
 
-static AList entityList;
-
+static PList entityList;
 
 void entityRegistryInit()
 {
-    alistNew(&entityList, 10, sizeof(AListPtr));
+    plistNew(&entityList, 10);
     for (int i = 0; i < entityList.length; i++)
     {
-        alistSet(&entityList, i, nullptr);
+        plistSet(&entityList, i, nullptr);
     }
 }
 
@@ -24,96 +25,110 @@ void entityRegistryDestroy()
 {
     for (int i = 0; i < entityList.length; i++)
     {
-        AListPtr *ptr = alistGet(&entityList, i);
-        Entity *entity = ptr->ptr;
+        Entity *entity = plistGet(&entityList, i);
         if (entity == nullptr)
         {
             continue;
         }
         entityFree(entity);
     }
-    alistFree(&entityList);
+    plistFree(&entityList);
 }
 
-Rc entityRegistryRegister(Entity *entity)
+static bool isEntityRegistered(Entity *entity)
 {
     for (int i = 0; i < entityList.length; i++)
     {
-        AListPtr *ptr = alistGet(&entityList, i);
-        if (ptr->ptr == nullptr)
+        Entity *e = plistGet(&entityList, i);
+        if (e == nullptr)
         {
-            return alistSet(&entityList, 0, alistptr(entity));
+            continue;
+        }
+        if (e == entity)
+        {
+            return true;
         }
     }
-    return alistAppend(&entityList, alistptr(entity));
+    return false;
+}
+
+
+Rc entityRegistryRegister(Entity *entity)
+{
+    if (isEntityRegistered(entity))
+    {
+        return RC_BAD_PARAM;
+    }
+    for (int i = 0; i < entityList.length; i++)
+    {
+        Entity *e = plistGet(&entityList, i);
+        if (e == nullptr)
+        {
+            return plistSet(&entityList, i, entity);
+        }
+    }
+    return plistAppend(&entityList, entity);
 }
 
 Rc entityRegistryUnregister(Entity *entity)
 {
     for (int i = 0; i < entityList.length; i++)
     {
-        AListPtr *ptr = alistGet(&entityList, i);
-        if (ptr->ptr == entity)
+        Entity *e = plistGet(&entityList, i);
+        if (e == entity)
         {
-            return alistSet(&entityList, i, nullptr);
+            return plistSet(&entityList, i, nullptr);
         }
     }
     return RC_NOT_FOUND;
 }
 
-Entity *entityRegistryLookupFirst(u32 componentsCount, ...)
+Entity *entityRegistryLookupFirst(const u32 *componentIDs, u32 componentIDsCount)
 {
-    va_list args;
-    va_start(args, componentsCount);
-
     Entity *entity = nullptr;
     for (int i = 0; i < entityList.length; i++)
     {
-        AListPtr *ptr = alistGet(&entityList, i);
-        entity = ptr->ptr;
+        entity = plistGet(&entityList, i);
         if (entity == nullptr)
         {
             continue;
         }
         int matches = 0;
-        for (int j = 0; j < componentsCount; j++)
+        for (int j = 0; j < componentIDsCount; j++)
         {
-            u32 componentID = va_arg(args, u32);
+            u32 componentID = componentIDs[j];
             void *comp = entityGetComponent(entity, componentID);
             if (comp != nullptr)
             {
                 matches++;
             }
         }
-        if (matches == componentsCount)
+        if (matches == componentIDsCount)
         {
             goto EXIT;
         }
     }
 
 EXIT:
-    va_end(args);
+
     return entity;
 }
 
-Rc entityRegistryLookupAll(LList *llist, u32 componentsCount, ...)
+Rc entityRegistryLookupAll(LList *llist, const u32 *componentIDs, u32 componentIDsCount)
 {
-    va_list args;
-    va_start(args, componentsCount);
-
     llistInit(llist);
     for (int i = 0; i < entityList.length; i++)
     {
-        Entity *entity = alistGet(&entityList, i);
+        Entity *entity = plistGet(&entityList, i);
         if (entity == nullptr)
         {
             continue;
         }
 
         int matches = 0;
-        for (int j = 0; j < componentsCount; j++)
+        for (int j = 0; j < componentIDsCount; j++)
         {
-            u32 componentID = va_arg(args, u32);
+            u32 componentID = componentIDs[j];
             void *comp = entityGetComponent(entity, componentID);
             if (comp != nullptr)
             {
@@ -121,13 +136,10 @@ Rc entityRegistryLookupAll(LList *llist, u32 componentsCount, ...)
             }
         }
 
-        if (matches == componentsCount)
+        if (matches == componentIDsCount)
         {
             llistAppend(llist, &entity->lnode);
         }
     }
-
-    va_end(args);
-
     return RC_OK;
 }

@@ -1,15 +1,19 @@
 
-#include "pray_components.h"
+#include "common_types.h"
+#include "linked_list.h"
+#include "pray_component.h"
 #include "pray_engine_tests.h"
 #include "pray_entity.h"
+#include "pray_entity_registry.h"
 #include "test_components.h"
 #include "tmem.h"
 #include <CUnit/Basic.h>
 #include <CUnit/CUnit.h>
-
+#include <stdio.h>
 
 void createEntityTest()
 {
+    entityRegistryInit();
     registerTestComponents();
 
     u32 entityIDs[4];
@@ -70,14 +74,128 @@ void createEntityTest()
     CU_ASSERT_PTR_NULL_FATAL(entity4);
 
     componentsDestroy();
+    entityRegistryDestroy();
 
     auto stats = tMemGetStats();
     CU_ASSERT_EQUAL(stats.current, 0);
 }
 
+#define LUKE_HEALTH 87
+#define VADER_HEALTH 34
+
+void entityRegistryTest()
+{
+    entityRegistryInit();
+    registerTestComponents();
+
+    Entity *player = entityNew(3, PLAYER, TRANSFORM, HEALTH);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(player);
+    PlayerComponent *playerComponent = entityGetComponent(player, PLAYER);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(playerComponent);
+    snprintf(playerComponent->playerName, sizeof(playerComponent->playerName), "Luke Skywalker");
+    snprintf(playerComponent->origin, sizeof(playerComponent->origin), "Tatooine");
+    playerComponent->playerAge = 20;
+    HealthComponent *playerHealth = entityGetComponent(player, HEALTH);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(playerHealth);
+    playerHealth->currentHealth = LUKE_HEALTH;
+
+    Rc rc = entityRegistryRegister(player);
+    CU_ASSERT_EQUAL(rc, RC_OK);
+
+    rc = entityRegistryRegister(player);
+    CU_ASSERT_EQUAL(rc, RC_BAD_PARAM);
+
+    Entity *enemy = entityNew(3, ENEMY, TRANSFORM, HEALTH);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(enemy);
+    EnemyComponent *enemyComponent = entityGetComponent(enemy, ENEMY);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(enemyComponent);
+    snprintf(enemyComponent->enemyName, sizeof(enemyComponent->enemyName), "Darth Vader");
+    snprintf(enemyComponent->origin, sizeof(enemyComponent->origin), "Tatooine");
+    enemyComponent->enemyAge = 45;
+    HealthComponent *enemyHealth = entityGetComponent(enemy, HEALTH);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(enemyHealth);
+    enemyHealth->currentHealth = VADER_HEALTH;
+
+    rc = entityRegistryRegister(enemy);
+    CU_ASSERT_EQUAL(rc, RC_OK);
+
+    LList playerList;
+
+    rc = entityRegistryLookupAll(&playerList, C(PLAYER, HEALTH), 2);
+    CU_ASSERT_EQUAL(rc, RC_OK);
+    CU_ASSERT_EQUAL_FATAL(playerList.size, 1);
+
+    Entity *playerEntity = LListGetEntry(playerList.head, Entity);
+    PlayerComponent *p = entityGetComponent(playerEntity, PLAYER);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(p);
+    CU_ASSERT_STRING_EQUAL(p->playerName, "Luke Skywalker");
+    CU_ASSERT_STRING_EQUAL(p->origin, "Tatooine");
+    CU_ASSERT_EQUAL(p->playerAge, 20);
+    HealthComponent *phealth = entityGetComponent(playerEntity, HEALTH);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(phealth);
+    CU_ASSERT_EQUAL(phealth->currentHealth, LUKE_HEALTH);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(entityGetComponent(playerEntity, TRANSFORM));
+
+    LList enemyList;
+
+    rc = entityRegistryLookupAll(&enemyList, C(ENEMY, HEALTH), 2);
+    CU_ASSERT_EQUAL(rc, RC_OK);
+    CU_ASSERT_EQUAL_FATAL(enemyList.size, 1);
+
+    Entity *enemyEntity = LListGetEntry(enemyList.head, Entity);
+    EnemyComponent *e = entityGetComponent(enemyEntity, ENEMY);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(e);
+    CU_ASSERT_STRING_EQUAL(e->enemyName, "Darth Vader");
+    CU_ASSERT_STRING_EQUAL(e->origin, "Tatooine");
+    CU_ASSERT_EQUAL(e->enemyAge, 45);
+    HealthComponent *ehealth = entityGetComponent(enemyEntity, HEALTH);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(ehealth);
+    CU_ASSERT_EQUAL(ehealth->currentHealth, VADER_HEALTH);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(entityGetComponent(enemyEntity, TRANSFORM));
+
+    LList transportHealthList;
+    llistInit(&transportHealthList);
+    rc = entityRegistryLookupAll(&transportHealthList, C(TRANSFORM, HEALTH), 2);
+    CU_ASSERT_EQUAL(rc, RC_OK);
+    CU_ASSERT_EQUAL(transportHealthList.size, 2);
+
+    Entity *entity = entityRegistryLookupFirst(C(HEALTH, PLAYER), 2);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(entity);
+    CU_ASSERT_PTR_EQUAL(entity, playerEntity);
+
+    LList worldList;
+
+    rc = entityRegistryLookupAll(&worldList, C(TRANSFORM, HEALTH, WORLD), 3);
+    CU_ASSERT_EQUAL(rc, RC_OK);
+    CU_ASSERT_EQUAL(worldList.size, 0);
+
+    Entity *ent = entityRegistryLookupFirst(C(ENEMY, PLAYER), 2);
+    CU_ASSERT_PTR_NULL(ent);
+
+    rc = entityRegistryUnregister(playerEntity);
+    CU_ASSERT_EQUAL(rc, RC_OK);
+
+    rc = entityRegistryUnregister(playerEntity);
+    CU_ASSERT_EQUAL(rc, RC_NOT_FOUND);
+
+    rc = entityRegistryUnregister(enemyEntity);
+    CU_ASSERT_EQUAL(rc, RC_OK);
+
+    playerEntity = entityFree(playerEntity);
+    CU_ASSERT_PTR_NULL(playerEntity);
+    enemyEntity = entityFree(enemyEntity);
+    CU_ASSERT_PTR_NULL(enemyEntity);
+
+    componentsDestroy();
+    entityRegistryDestroy();
+
+    auto stats = tMemGetStats();
+    CU_ASSERT_EQUAL(stats.current, 0);
+}
 
 void registerEntityTests()
 {
     CU_pSuite suite = CU_add_suite("Entity Tests", nullptr, nullptr);
     CU_add_test(suite, "Create Entity Test", createEntityTest);
+    CU_add_test(suite, "Entity Registry Test", entityRegistryTest);
 }

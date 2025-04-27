@@ -103,7 +103,6 @@ void llistPushFront(LList *llist, LNode *lnode)
 
 void llistPushBack(LList *llist, LNode *lnode)
 {
-
     if (llistContainsNode(llist, lnode))
     {
         return;

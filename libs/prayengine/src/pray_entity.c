@@ -2,7 +2,7 @@
 #include "pray_entity.h"
 #include "array_list.h"
 #include "common_types.h"
-#include "pray_components.h"
+#include "pray_component.h"
 #include "linked_list.h"
 #include <stdarg.h>
 #include "tmem.h"

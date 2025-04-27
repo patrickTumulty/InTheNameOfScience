@@ -1,7 +1,7 @@
 
 #include "common_tests.h"
 #include "tmem.h"
-#include "utils.h"
+#include "common_utils.h"
 #include <CUnit/Basic.h>
 #include <CUnit/CUnit.h>
 #include <stdint.h>

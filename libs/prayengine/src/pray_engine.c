@@ -49,8 +49,8 @@ void prayEngineRun()
 void prayEngineInitialize()
 {
     tMemInit();
-    entityRegistryInit();
     systemsInit();
+    entityRegistryInit();
 }
 
 

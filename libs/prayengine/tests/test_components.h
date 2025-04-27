@@ -12,7 +12,10 @@ typedef enum : u32
     TRANSFORM = 2,
     HEALTH = 3,
     WORLD = 4,
+    ENEMY = 5,
 } TestComponentID;
+
+#define C(...) (TestComponentID[]) { __VA_ARGS__ }
 
 typedef struct
 {
@@ -20,6 +23,13 @@ typedef struct
     int playerAge;
     char origin[20];
 } PlayerComponent;
+
+typedef struct
+{
+    char enemyName[20];
+    int enemyAge;
+    char origin[20];
+} EnemyComponent;
 
 typedef struct
 {

@@ -1,8 +1,8 @@
 
 #include "array_list.h"
 #include "common_types.h"
+#include "common_utils.h"
 #include "tmem.h"
-#include "utils.h"
 #include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
@@ -10,10 +10,17 @@
 Rc alistNew(AList *alist, u32 length, u32 size)
 {
     size_t s = (u64) size * length;
-    alist->data = tmemcalloc(1, s);
-    if (alist->data == nullptr)
+    if (s == 0)
     {
-        return RC_MEM_ALLOC_ERROR;
+        alist->data = nullptr;
+    }
+    else
+    {
+        alist->data = tmemcalloc(1, s);
+        if (alist->data == nullptr)
+        {
+            return RC_MEM_ALLOC_ERROR;
+        }
     }
     alist->dataSize = s;
     alist->elementSize = (int) size;
@@ -29,8 +36,11 @@ Rc alistResize(AList *alist, u32 length)
     {
         return RC_MEM_ALLOC_ERROR;
     }
-    memcpy(newBuffer, alist->data, MIN(alist->dataSize, newSize));
-    tmemfree(alist->data);
+    if (alist->data != nullptr)
+    {
+        memcpy(newBuffer, alist->data, MIN(alist->dataSize, newSize));
+        tmemfree(alist->data);
+    }
     alist->data = newBuffer;
     alist->dataSize = newSize;
     alist->length = length;
@@ -45,7 +55,11 @@ Rc alistAppend(AList *alist, const void *data)
     {
         return RC_MEM_ALLOC_ERROR;
     }
-    memcpy(newBuffer, alist->data, alist->dataSize);
+    if (alist->data != nullptr)
+    {
+        memcpy(newBuffer, alist->data, alist->dataSize);
+        tmemfree(alist->data);
+    }
     if (data == nullptr)
     {
         memset(newBuffer + alist->dataSize, 0, alist->elementSize);
@@ -54,7 +68,6 @@ Rc alistAppend(AList *alist, const void *data)
     {
         memcpy(newBuffer + alist->dataSize, data, alist->elementSize);
     }
-    tmemfree(alist->data);
     alist->data = newBuffer;
     alist->dataSize += alist->elementSize;
     alist->length++;
@@ -68,7 +81,7 @@ void *alistGet(AList *alist, int index)
         return nullptr;
     }
     uint32_t offset = alist->elementSize * index;
-    return alist->data + offset;
+    return alist->data == nullptr ? nullptr : alist->data + offset;
 }
 
 Rc alistSet(AList *alist, int index, const void *data)

@@ -2,6 +2,7 @@
 #include "array_list.h"
 #include "common_tests.h"
 #include "common_types.h"
+#include "pointer_list.h"
 #include "tmem.h"
 #include <CUnit/Basic.h>
 #include <CUnit/CUnit.h>
@@ -203,41 +204,91 @@ void alistResizeTest(void)
     CU_ASSERT_EQUAL(stats.current, 0);
 }
 
-void alistSetNullTest(void)
+typedef struct
 {
-    AList alist = {};
-    alistNew(&alist, 5, sizeof(AListPtr));
+    u64 arg1;
+    u64 arg2;
+    u64 arg3;
+    u64 arg4;
+    u64 arg5;
+} TestStruct;
 
-    CU_ASSERT_EQUAL(alist.dataSize, sizeof(AListPtr) * 5);
-    CU_ASSERT_EQUAL(alist.elementSize, sizeof(AListPtr));
-    CU_ASSERT_EQUAL(alist.length, 5);
+void plistTest(void)
+{
+    TestStruct *structs[5];
 
-    for (int i = 0; i < alist.length; i++)
+    for (int i = 0; i < 5; i++)
     {
-        AListPtr *ptr =  alistGet(&alist, i);
-        CU_ASSERT_PTR_NULL(ptr->ptr);
+        TestStruct *ts = tmemcalloc(1, sizeof(TestStruct));
+        structs[i] = ts;
+        ts->arg1 = 1UL * i;
+        ts->arg2 = 2UL * i;
+        ts->arg3 = 3UL * i;
+        ts->arg4 = 4UL * i;
+        ts->arg5 = 5UL * i;
     }
 
-    for (int i = 0; i < alist.length; i++)
+    PList plist = {};
+    plistNew(&plist, 5);
+
+    CU_ASSERT_EQUAL(plist.dataSize, sizeof(u64) * 5);
+    CU_ASSERT_EQUAL(plist.elementSize, sizeof(u64));
+    CU_ASSERT_EQUAL(plist.length, 5);
+
+    for (int i = 0; i < plist.length; i++)
     {
-        u64 *number = tmemcalloc(1, sizeof(u64));
-        Rc rc = alistSet(&alist, i, alistptr(number));
+        void *ptr = plistGet(&plist, i);
+        CU_ASSERT_PTR_NULL(ptr);
+    }
+
+    for (int i = 0; i < plist.length; i++)
+    {
+        Rc rc = plistSet(&plist, i, structs[i]);
         CU_ASSERT_EQUAL(rc, RC_OK);
     }
 
-    for (int i = 0; i < alist.length; i++)
+    for (int i = 0; i < plist.length; i++)
     {
-        AListPtr *ptr =  alistGet(&alist, i);
-        CU_ASSERT_PTR_NOT_NULL(ptr->ptr);
-        tmemfree(ptr->ptr);
-        Rc rc = alistSet(&alist, i, nullptr);
+        TestStruct *ptr = plistGet(&plist, i);
+        CU_ASSERT_PTR_NOT_NULL(ptr);
+        CU_ASSERT_PTR_EQUAL(ptr, structs[i]);
+        CU_ASSERT_EQUAL(ptr->arg1, 1UL * i);
+        CU_ASSERT_EQUAL(ptr->arg2, 2UL * i);
+        CU_ASSERT_EQUAL(ptr->arg3, 3UL * i);
+        CU_ASSERT_EQUAL(ptr->arg4, 4UL * i);
+        CU_ASSERT_EQUAL(ptr->arg5, 5UL * i);
+    }
+
+    for (int i = 0; i < plist.length; i++)
+    {
+        TestStruct *ptr = plistGet(&plist, i);
+        CU_ASSERT_PTR_NOT_NULL(ptr);
+        tmemfree(ptr);
+        Rc rc = plistSet(&plist, i, nullptr);
         CU_ASSERT_EQUAL(rc, RC_OK);
     }
 
-    alistFree(&alist);
+    for (int i = 0; i < plist.length; i++)
+    {
+        void *ptr = plistGet(&plist, i);
+        CU_ASSERT_PTR_NULL(ptr);
+    }
+
+    plistFree(&plist);
 
     auto stats = tMemGetStats();
     CU_ASSERT_EQUAL(stats.current, 0);
+}
+
+void emptyThenAdd()
+{
+    AList alist = {};
+    Rc rc = alistNew(&alist, 0, sizeof(u64));
+    CU_ASSERT_EQUAL(rc, RC_OK);
+
+    u64 number = 10;
+    rc = alistAppend(&alist, &number);
+    CU_ASSERT_EQUAL(rc, RC_OK);
 }
 
 void registerArrayListTests(void)
@@ -248,5 +299,6 @@ void registerArrayListTests(void)
     CU_add_test(suite, "Append test", alistAppendTest);
     CU_add_test(suite, "Out-of-Bounds test", alistOutOfBoundsTest);
     CU_add_test(suite, "Resize array test", alistResizeTest);
-    CU_add_test(suite, "Setting Null", alistSetNullTest);
+    CU_add_test(suite, "PList test", plistTest);
+    CU_add_test(suite, "Empty then append", emptyThenAdd);
 }

@@ -1,7 +1,7 @@
 
 #include "test_components.h"
 #include "common_types.h"
-#include "pray_components.h"
+#include "pray_component.h"
 #include "tmem.h"
 #include <CUnit/Basic.h>
 #include <CUnit/CUnit.h>
@@ -42,6 +42,8 @@ void registerTestComponents()
     componentRegister(HEALTH, sizeof(PlayerComponent), nullptr, nullptr);
 
     componentRegister(WORLD, sizeof(WorldComponent), initWorld, deinitWorld);
+
+    componentRegister(ENEMY, sizeof(EnemyComponent), nullptr, nullptr);
 }
 
 void registerComponentTest()

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <threads.h>
-#include <utils.h>
+#include <common_utils.h>
 
 static TMemStats stats = {0};
 static mtx_t lock;

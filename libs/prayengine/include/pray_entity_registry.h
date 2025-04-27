@@ -12,7 +12,7 @@ void entityRegistryInit();
 void entityRegistryDestroy();
 Rc entityRegistryRegister(Entity *entity);
 Rc entityRegistryUnregister(Entity *entity);
-Entity *entityRegistryLookupFirst(u32 componentsCount, ...);
-Rc entityRegistryLookupAll(LList *list, u32 componentsCount, ...);
+Entity *entityRegistryLookupFirst(const u32 *componentIDs, u32 componentIDsCount);
+Rc entityRegistryLookupAll(LList *llist, const u32 *componentIDs, u32 componentIDsCount);
 
 #endif
