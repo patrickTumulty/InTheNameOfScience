@@ -58,24 +58,22 @@ void gameUpdate()
     }
 
     camera->target = cameraTarget;
-}
-
-void worldSpaceRender()
-{
-    Camera2D *camera = getPrayCamera();
 
     float width = (float) GetScreenWidth();
     float height = (float) GetScreenHeight();
     camera->offset = (Vector2) {width / 2, height / 2};
 }
 
+
 void registerCameraSystem()
 {
-    System *system = systemNew();
-    snprintf(system->systemName, sizeof(system->systemName), "Camera");
-    system->start = start;
-    system->stop = close;
-    system->gameUpdate = gameUpdate;
-    system->renderUpdateWorldSpace = worldSpaceRender;
+    System cameraSystem = {
+        .systemName = "Camera System",
+        .start = start,
+        .stop = close,
+        .gameUpdate = gameUpdate,
+    };
+
+    praySystemsRegister(cameraSystem);
 }
 

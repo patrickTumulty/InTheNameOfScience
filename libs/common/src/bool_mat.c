@@ -16,7 +16,6 @@ BoolMat *boolMatNew(uint32_t rows, uint32_t cols, bool initial, bool outOfBounds
 
     BoolMat *boolMat = (BoolMat *) data;
     boolMat->outOfBounds = outOfBounds;
-
     boolMat->rows = rows;
     boolMat->cols = cols;
 

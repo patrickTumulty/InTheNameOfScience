@@ -8,7 +8,6 @@
 
 void prayEngineRun()
 {
-
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "In the Name of Science!");
 
     SetWindowState(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
@@ -16,11 +15,11 @@ void prayEngineRun()
 
     SetTargetFPS(60);
 
-    systemsRunStart();
+    praySystemsRunStart();
 
     while (!WindowShouldClose())
     {
-        systemsRunGameUpdate();
+        praySystemsRunGameUpdate();
 
         BeginDrawing();
 
@@ -30,16 +29,16 @@ void prayEngineRun()
 
         DrawCircle(10, 10, 100, RED);
 
-        systemsRunRenderUpdateWorldSpace();
+        praySystemsRunRenderUpdateWorldSpace();
 
         EndMode2D();
 
-        systemsRunRenderUpdateScreenSpace();
+        praySystemsRunRenderUpdateScreenSpace();
 
         EndDrawing();
     }
 
-    systemsRunStop();
+    praySystemsRunStop();
 
     CloseWindow();
 
@@ -49,7 +48,7 @@ void prayEngineRun()
 void prayEngineInitialize()
 {
     tMemInit();
-    systemsInit();
+    praySystemsInit();
     entityRegistryInit();
 }
 
@@ -57,7 +56,7 @@ void prayEngineInitialize()
 void prayEngineDestroy()
 {
     entityRegistryDestroy();
-    systemsDestroy();
+    praySystemsDestroy();
     tMemDestroy();
 }
 

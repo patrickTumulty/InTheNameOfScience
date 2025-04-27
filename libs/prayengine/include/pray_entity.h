@@ -16,7 +16,7 @@ typedef struct {
     LNode lnode;
 } Entity;
 
-Entity *entityNew(u32 componentsCount, ...);
+Entity *entityNew(const u32 *componentIDs,u32 componentIDsCount) ;
 Entity *entityFree(Entity *entity);
 void *entityGetComponent(Entity *entity, u32 componentID);
 

@@ -14,11 +14,7 @@ static PList entityList;
 
 void entityRegistryInit()
 {
-    plistNew(&entityList, 10);
-    for (int i = 0; i < entityList.length; i++)
-    {
-        plistSet(&entityList, i, nullptr);
-    }
+    plistNew(&entityList, 0);
 }
 
 void entityRegistryDestroy()
@@ -86,6 +82,7 @@ Rc entityRegistryUnregister(Entity *entity)
 Entity *entityRegistryLookupFirst(const u32 *componentIDs, u32 componentIDsCount)
 {
     Entity *entity = nullptr;
+    bool entityFound = false;
     for (int i = 0; i < entityList.length; i++)
     {
         entity = plistGet(&entityList, i);
@@ -105,13 +102,14 @@ Entity *entityRegistryLookupFirst(const u32 *componentIDs, u32 componentIDsCount
         }
         if (matches == componentIDsCount)
         {
+            entityFound = true;
             goto EXIT;
         }
     }
 
 EXIT:
 
-    return entity;
+    return entityFound ? entity : nullptr;
 }
 
 Rc entityRegistryLookupAll(LList *llist, const u32 *componentIDs, u32 componentIDsCount)

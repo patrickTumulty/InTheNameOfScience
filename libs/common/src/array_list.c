@@ -3,6 +3,7 @@
 #include "common_types.h"
 #include "common_utils.h"
 #include "tmem.h"
+#include <assert.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
@@ -109,8 +110,12 @@ u32 alistLength(AList *alist)
 
 void alistFree(AList *alist)
 {
-    tmemfree(alist->data);
-    alist->data = nullptr;
+    assert(alist->length > 0 && alist->data != nullptr || alist->length == 0 && alist->data == nullptr);
+    if (alist->data != nullptr)
+    {
+        tmemfree(alist->data);
+        alist->data = nullptr;
+    }
     alist->dataSize = 0;
     alist->elementSize = 0;
     alist->length = 0;

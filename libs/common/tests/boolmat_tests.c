@@ -18,7 +18,7 @@ void initBoolMatFalse(void)
     {
         for (int j = 0; j < boolMat->cols; j++)
         {
-            CU_ASSERT_EQUAL(boolMat->mat[i][j], false);
+            CU_ASSERT_EQUAL(boolMatGet(boolMat, j, i), false);
         }
     }
 
@@ -39,7 +39,7 @@ void initBoolMatTrue(void)
     {
         for (int j = 0; j < boolMat->cols; j++)
         {
-            CU_ASSERT_EQUAL(boolMat->mat[i][j], true);
+            CU_ASSERT_EQUAL(boolMatGet(boolMat, j, i), true);
         }
     }
 

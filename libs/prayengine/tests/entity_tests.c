@@ -18,19 +18,19 @@ void createEntityTest()
 
     u32 entityIDs[4];
 
-    Entity *entity1 = entityNew(3, PLAYER, TRANSFORM, HEALTH);
+    Entity *entity1 = entityNew(C(PLAYER, TRANSFORM, HEALTH), 3);
     entityIDs[0] = entity1->entityId;
     CU_ASSERT_EQUAL(entity1->componentLookup.length, 3);
 
-    Entity *entity2 = entityNew(2, HEALTH, TRANSFORM);
+    Entity *entity2 = entityNew(C(HEALTH, TRANSFORM), 2);
     entityIDs[1] = entity2->entityId;
     CU_ASSERT_EQUAL(entity2->componentLookup.length, 2);
 
-    Entity *entity3 = entityNew(1, TRANSFORM);
+    Entity *entity3 = entityNew(C(TRANSFORM), 1);
     entityIDs[2] = entity3->entityId;
     CU_ASSERT_EQUAL(entity3->componentLookup.length, 1);
 
-    Entity *entity4 = entityNew(2, WORLD, TRANSFORM);
+    Entity *entity4 = entityNew(C(WORLD, TRANSFORM), 2);
     entityIDs[3] = entity4->entityId;
     CU_ASSERT_EQUAL(entity4->componentLookup.length, 2);
 
@@ -88,7 +88,7 @@ void entityRegistryTest()
     entityRegistryInit();
     registerTestComponents();
 
-    Entity *player = entityNew(3, PLAYER, TRANSFORM, HEALTH);
+    Entity *player = entityNew(C(PLAYER, TRANSFORM, HEALTH), 3);
     CU_ASSERT_PTR_NOT_NULL_FATAL(player);
     PlayerComponent *playerComponent = entityGetComponent(player, PLAYER);
     CU_ASSERT_PTR_NOT_NULL_FATAL(playerComponent);
@@ -105,7 +105,7 @@ void entityRegistryTest()
     rc = entityRegistryRegister(player);
     CU_ASSERT_EQUAL(rc, RC_BAD_PARAM);
 
-    Entity *enemy = entityNew(3, ENEMY, TRANSFORM, HEALTH);
+    Entity *enemy = entityNew(C(ENEMY, TRANSFORM, HEALTH), 3);
     CU_ASSERT_PTR_NOT_NULL_FATAL(enemy);
     EnemyComponent *enemyComponent = entityGetComponent(enemy, ENEMY);
     CU_ASSERT_PTR_NOT_NULL_FATAL(enemyComponent);
@@ -193,9 +193,50 @@ void entityRegistryTest()
     CU_ASSERT_EQUAL(stats.current, 0);
 }
 
+void entityWithComponentAllocations()
+{
+    entityRegistryInit();
+    registerTestComponents();
+
+    Entity *worldEntity = entityNew(C(WORLD), 1);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(worldEntity);
+    WorldComponent *world = entityGetComponent(worldEntity, WORLD);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(world);
+    CU_ASSERT_EQUAL(world->worldSize, 100);
+    for (int i = 0; i < 100; i++)
+    {
+        CU_ASSERT_EQUAL(world->world[i], i);
+    }
+
+    entityRegistryRegister(worldEntity);
+
+    Entity *worldEntity2 = entityRegistryLookupFirst(C(WORLD), 1);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(worldEntity2);
+    WorldComponent *world2 = entityGetComponent(worldEntity2, WORLD);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(world2);
+    CU_ASSERT_EQUAL(world2->worldSize, 100);
+    for (int i = 0; i < 100; i++)
+    {
+        CU_ASSERT_EQUAL(world2->world[i], i);
+    }
+
+    CU_ASSERT_PTR_EQUAL(world, world2);
+
+
+    entityRegistryUnregister(worldEntity);
+    entityFree(worldEntity);
+
+    componentsDestroy();
+    entityRegistryDestroy();
+
+    auto stats = tMemGetStats();
+    CU_ASSERT_EQUAL(stats.current, 0);
+}
+
 void registerEntityTests()
 {
     CU_pSuite suite = CU_add_suite("Entity Tests", nullptr, nullptr);
     CU_add_test(suite, "Create Entity Test", createEntityTest);
     CU_add_test(suite, "Entity Registry Test", entityRegistryTest);
+    CU_add_test(suite, "Entity with Component Allocations", entityWithComponentAllocations);
 }

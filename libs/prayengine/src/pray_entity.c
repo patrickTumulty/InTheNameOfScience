@@ -9,16 +9,12 @@
 
 static u64 entityCounter = 0;
 
-Entity *entityNew(u32 componentsCount, ...)
+Entity *entityNew(const u32 *componentIDs,u32 componentIDsCount)
 {
-    va_list args;
-    va_list args_copy;
-    va_start(args, componentsCount); // Initialize args to store all values after count
-
     u64 size = sizeof(Entity);
-    for (int i = 0; i < componentsCount; i++)
+    for (int i = 0; i < componentIDsCount; i++)
     {
-        u32 componentID = va_arg(args, u32);
+        u32 componentID = componentIDs[i];
         ComponentInitializer compInitializer = {0};
         if (componentGetInitializer(componentID, &compInitializer) != RC_OK) {
             continue;
@@ -33,19 +29,16 @@ Entity *entityNew(u32 componentsCount, ...)
     }
 
     newEntity->entityId = entityCounter++;
-    alistNew(&newEntity->componentLookup, componentsCount, sizeof(ComponentPtr));
+    alistNew(&newEntity->componentLookup, componentIDsCount, sizeof(ComponentPtr));
     llistInitNode(&newEntity->lnode, newEntity);
 
     u8 *ptr = (u8 *) newEntity;
     ptr += sizeof(Entity);
 
-    va_start(args, componentsCount);
-    va_copy(args_copy, args);
-
     int cidx = 0;
-    for (int i = 0; i < componentsCount; i++)
+    for (int i = 0; i < componentIDsCount; i++)
     {
-        u32 componentID = va_arg(args_copy, u32);
+        u32 componentID = componentIDs[i];
         ComponentInitializer compInitializer = {0};
         if (componentGetInitializer(componentID, &compInitializer) != RC_OK) {
             continue;
@@ -59,9 +52,6 @@ Entity *entityNew(u32 componentsCount, ...)
         }
         ptr += compInitializer.size;
     }
-
-    va_end(args);
-    va_end(args_copy);
 
     return newEntity;
 }

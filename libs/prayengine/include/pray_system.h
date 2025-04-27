@@ -7,8 +7,6 @@
 typedef struct
 {
     char systemName[50];
-    bool initialized;
-    bool started;
     void (*start)(void);
     void (*stop)(void);
     void (*gameUpdate)(void);
@@ -16,19 +14,17 @@ typedef struct
     void (*renderUpdateScreenSpace)(void);
 } System;
 
-void systemNoop(void);
-System *systemNew();
-System *systemFree(System *system);
-void systemsInit();
-void systemsDestroy();
-AList *systemsGet();
-Rc systemsAdd(System *system);
-Rc systemsRemove(System *system);
+void praySystemNoop(void);
+void praySystemsInit();
+void praySystemsDestroy();
+AList *praySystemsGetList();
 
-void systemsRunStart();
-void systemsRunStop();
-void systemsRunGameUpdate();
-void systemsRunRenderUpdateWorldSpace();
-void systemsRunRenderUpdateScreenSpace();
+Rc praySystemsRegister(System system);
+
+void praySystemsRunStart();
+void praySystemsRunStop();
+void praySystemsRunGameUpdate();
+void praySystemsRunRenderUpdateWorldSpace();
+void praySystemsRunRenderUpdateScreenSpace();
 
 #endif

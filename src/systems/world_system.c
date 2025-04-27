@@ -1,58 +1,38 @@
 
 #include "world_system.h"
 #include "bool_mat.h"
-#include "pray_components.h"
+#include "itnos_components.h"
+#include "pray_colors.h"
 #include "pray_entity.h"
 #include "pray_entity_registry.h"
-#include "pray_colors.h"
 #include "pray_globals.h"
 #include "pray_system.h"
-#include "tmem.h"
+#include <pthread.h>
+#include <stdio.h>
+#include <threads.h>
 
-// static BoolMat *navGrid;
-// static char world[WORLD_HEIGHT][WORLD_WIDTH] = {0};
-// static Position startingPoint = {1, 1};
-//
 static Entity *worldEntity;
 static World *worldComponent;
 
 static void start()
 {
-    ComponentID cids[] = {CID_TRANSFORM, CID_WORLD};
-
-    worldEntity = entityNew(cids, 2);
-
+    worldEntity = entityNew(C(CID_WORLD), 1);
     worldComponent = entityGetComponent(worldEntity, CID_WORLD);
-    worldComponent->navGrid = boolMatNew(WORLD_HEIGHT, WORLD_WIDTH, true, false);
-    worldComponent->rows = WORLD_HEIGHT;
-    worldComponent->cols = WORLD_HEIGHT;
-
-    u64 rows = worldComponent->rows;
-    u64 cols = worldComponent->cols;
-
-    worldComponent->world = (char **) tmemcalloc(1, (u64) (rows * sizeof(char *)) + (rows * cols * sizeof(char)));
-    char *data = ((char *) worldComponent->world) + (sizeof(char *) * rows);
-    for (u64 i = 0; i < rows; i++)
-    {
-        worldComponent->world[i] = (data + i * cols);
-    }
 
     entityRegistryRegister(worldEntity);
 }
 
 static void stop()
 {
-    tmemfree((void *) worldComponent->world);
-    boolMatFree(worldComponent->navGrid);
-
+    entityRegistryUnregister(worldEntity);
     entityFree(worldEntity);
 }
 
 static void renderWorld()
 {
-    for (int i = 0; i < WORLD_HEIGHT; i++)
+    for (int i = 0; i < worldComponent->rows; i++)
     {
-        for (int j = 0; j < WORLD_WIDTH; j++)
+        for (int j = 0; j < worldComponent->cols; j++)
         {
             Color color;
 
@@ -88,8 +68,8 @@ static void renderWorld()
     }
 
     Rectangle rect;
-    rect.height = TILE_SIZE * WORLD_HEIGHT;
-    rect.width = TILE_SIZE * WORLD_WIDTH;
+    rect.height = TILE_SIZE * worldComponent->rows;
+    rect.width = TILE_SIZE * worldComponent->cols;
     rect.x = 0;
     rect.y = 0;
     DrawRectangleLinesEx(rect, 3.0f, MATERIAL_BLUE_GREY_700);
@@ -97,8 +77,12 @@ static void renderWorld()
 
 void registerWorldSystem()
 {
-    System *system = systemNew();
-    system->start = start;
-    system->stop = stop;
-    system->renderUpdateWorldSpace = renderWorld;
+    System worldSystem = {
+        .systemName = "World System",
+        .start = start,
+        .stop = stop,
+        .renderUpdateWorldSpace = renderWorld,
+    };
+
+    praySystemsRegister(worldSystem);
 }

@@ -2,10 +2,10 @@
 #include "pathfinding_system.h"
 #include "astar.h"
 #include "bool_mat.h"
-#include "camera_system.h"
 #include "common_types.h"
+#include "itnos_components.h"
+#include "pray_camera.h"
 #include "pray_entity_registry.h"
-#include "linked_list.h"
 #include "pray_globals.h"
 #include "pray_system.h"
 #include "tmem.h"
@@ -15,15 +15,14 @@
 
 static void gameUpdate()
 {
-    ComponentID cids[] = {CID_TRANSFORM, CID_WORLD};
-    Entity *worldEntity = entityRegistryLookupFirst(cids, 2);
-    World *worldComponent = entityGetComponent(worldEntity, CID_WORLD);
+    Entity *worldEntity = entityRegistryLookupFirst(C(CID_WORLD), 1);
+    WorldComponent *worldComponent = entityGetComponent(worldEntity, CID_WORLD);
 
     Position p = {1, 1};
 
     if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
     {
-        Vector2 position = GetScreenToWorld2D(GetMousePosition(), getCamera());
+        Vector2 position = GetScreenToWorld2D(GetMousePosition(), *getPrayCamera());
         int row = (int) position.y / TILE_SIZE;
         int col = (int) position.x / TILE_SIZE;
 
@@ -32,7 +31,7 @@ static void gameUpdate()
     }
     else if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
-        Vector2 position = GetScreenToWorld2D(GetMousePosition(), getCamera());
+        Vector2 position = GetScreenToWorld2D(GetMousePosition(), *getPrayCamera());
         int row = (int) position.y / TILE_SIZE;
         int col = (int) position.x / TILE_SIZE;
 
@@ -50,7 +49,7 @@ static void gameUpdate()
 
         AStarPath path = {};
 
-        astar(p, (Position) {.x = col, .y = row}, worldComponent->navGrid, &path);
+       astar(p, (Position) {.x = col, .y = row}, worldComponent->navGrid, &path);
 
         if (path.path != NULL || path.pathLen != 0)
         {
@@ -70,10 +69,10 @@ static void gameUpdate()
 
 void registerPathingSystem()
 {
-    System *system = systemNew();
-    snprintf(system->systemName, sizeof(system->systemName), "Pathfinding");
-    // system->start = start;
-    // system->stop = close;
-    system->gameUpdate = gameUpdate;
-    // system->renderUpdateWorldSpace = renderUpdate;
+    System system = {
+        .systemName = "Pathfinding",
+        .gameUpdate = gameUpdate,
+    };
+
+    praySystemsRegister(system);
 }

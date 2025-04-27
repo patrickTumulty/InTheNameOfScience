@@ -3,7 +3,8 @@
 #include "bool_mat.h"
 #include "linked_list.h"
 #include "tmem.h"
-#include "utils.h"
+#include "common_types.h"
+#include "common_utils.h"
 #include <math.h>
 #include <stdint.h>
 

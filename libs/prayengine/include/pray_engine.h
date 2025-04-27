@@ -4,7 +4,6 @@
 
 void prayEngineInitialize();
 void prayEngineDestroy();
-
 void prayEngineRun();
 
 #endif // PRAY_ENGINE_H

@@ -19,8 +19,12 @@ void initPlayer(void *ptr)
 void initWorld(void *ptr)
 {
     WorldComponent *world = ptr;
-    world->world = tmemcalloc(1, 10);
-    world->worldSize = 10;
+    world->world = tmemcalloc(1, 100);
+    for (int i = 0; i < 100; i++)
+    {
+        world->world[i] = i;
+    }
+    world->worldSize = 100;
 }
 
 void deinitWorld(void *ptr)
@@ -133,7 +137,7 @@ void initDeinitComponents()
     componentInitializer.initialize(worldComponent);
 
     CU_ASSERT_PTR_NOT_NULL(worldComponent->world);
-    CU_ASSERT_EQUAL(worldComponent->worldSize, 10);
+    CU_ASSERT_EQUAL(worldComponent->worldSize, 100);
 
     componentInitializer.deinitialize(worldComponent);
 

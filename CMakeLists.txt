@@ -41,12 +41,14 @@ include_directories(
     src/
     src/systems/
     src/utils/
+    src/components/
 )
 
 file(GLOB SOURCE_FILES 
     src/*.c
     src/systems/*.c
     src/utils/*.c
+    src/components/*.c
 )
 
 add_executable(${PROJECT_NAME} src/main.c ${SOURCE_FILES})

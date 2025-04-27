@@ -20,4 +20,5 @@ void hexdump(uint8_t *buf, uint32_t bufLen);
 
 const char *rc2str(Rc rc);
 
+
 #endif // UTILS_H
