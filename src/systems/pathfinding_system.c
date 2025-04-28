@@ -3,6 +3,7 @@
 #include "astar.h"
 #include "bool_mat.h"
 #include "common_types.h"
+#include "common_utils.h"
 #include "itnos_components.h"
 #include "pray_camera.h"
 #include "pray_entity_registry.h"
@@ -26,8 +27,11 @@ static void gameUpdate()
         int row = (int) position.y / TILE_SIZE;
         int col = (int) position.x / TILE_SIZE;
 
-        worldComponent->world[row][col] = 'X';
-        boolMatSet(worldComponent->navGrid, col, row, false);
+        if (inBounds(row, 0, (int) worldComponent->rows) && inBounds(col, 0, (int) worldComponent->cols))
+        {
+            worldComponent->world[row][col] = 'X';
+            boolMatSet(worldComponent->navGrid, col, row, false);
+        }
     }
     else if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
@@ -35,33 +39,36 @@ static void gameUpdate()
         int row = (int) position.y / TILE_SIZE;
         int col = (int) position.x / TILE_SIZE;
 
-        // Clear path
-        for (int i = 0; i < WORLD_HEIGHT; i++)
+        if (inBounds(row, 0, (int) worldComponent->rows) && inBounds(col, 0, (int) worldComponent->cols))
         {
-            for (int j = 0; j < WORLD_WIDTH; j++)
+            // Clear path
+            for (int i = 0; i < worldComponent->rows; i++)
             {
-                if (worldComponent->world[i][j] == '3' || worldComponent->world[i][j] == '2')
+                for (int j = 0; j < worldComponent->cols; j++)
                 {
-                    worldComponent->world[i][j] = 0;
+                    if (worldComponent->world[i][j] == '3' || worldComponent->world[i][j] == '2')
+                    {
+                        worldComponent->world[i][j] = 0;
+                    }
                 }
             }
-        }
 
-        AStarPath path = {};
+            AStarPath path = {};
 
-       astar(p, (Position) {.x = col, .y = row}, worldComponent->navGrid, &path);
+            astar(p, (Position) {.x = col, .y = row}, worldComponent->navGrid, &path);
 
-        if (path.path != NULL || path.pathLen != 0)
-        {
-            for (int i = 0; i < path.pathLen; i++)
+            if (path.path != NULL || path.pathLen != 0)
             {
-                Position p = path.path[i];
-                worldComponent->world[p.y][p.x] = '3';
+                for (int i = 0; i < path.pathLen; i++)
+                {
+                    Position p = path.path[i];
+                    worldComponent->world[p.y][p.x] = '3';
+                }
+                tmemfree(path.path);
             }
-            tmemfree(path.path);
-        }
 
-        worldComponent->world[row][col] = '2';
+            worldComponent->world[row][col] = '2';
+        }
     }
 
     worldComponent->world[p.y][p.x] = '1';

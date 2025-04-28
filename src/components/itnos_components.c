@@ -8,7 +8,6 @@
 #include <pthread.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <threads.h>
 
 
@@ -18,17 +17,17 @@ static void initWorldComponent(void *component)
     worldComponent->rows = WORLD_HEIGHT;
     worldComponent->cols = WORLD_WIDTH;
 
-    u32 rows = worldComponent->rows;
-    u32 cols = worldComponent->cols;
+    u64 rows = worldComponent->rows;
+    u64 cols = worldComponent->cols;
 
-    u32 dataOffset = sizeof(char *) * worldComponent->rows;
-    size_t size = dataOffset + (rows * cols);
-
+    u64 size = (rows * sizeof(char *)) + (rows * cols * sizeof(char));
     worldComponent->world = (char **) tmemcalloc(1, size);
-    char *data = (char *) (worldComponent->world + dataOffset);
+
+    u8 *data = (u8 *) (worldComponent->world + rows);
+
     for (u64 i = 0; i < worldComponent->rows; i++)
     {
-        worldComponent->world[i] = data + (worldComponent->cols * i);
+        worldComponent->world[i] = (char *) (data + (worldComponent->cols * i));
     }
 
     worldComponent->navGrid = boolMatNew(worldComponent->rows, worldComponent->cols, true, false);

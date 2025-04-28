@@ -18,6 +18,8 @@
 
 void hexdump(uint8_t *buf, uint32_t bufLen);
 
+bool inBounds(int v, int min, int max);
+
 const char *rc2str(Rc rc);
 
 

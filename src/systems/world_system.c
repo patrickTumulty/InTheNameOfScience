@@ -18,7 +18,6 @@ static void start()
 {
     worldEntity = entityNew(C(CID_WORLD), 1);
     worldComponent = entityGetComponent(worldEntity, CID_WORLD);
-
     entityRegistryRegister(worldEntity);
 }
 
