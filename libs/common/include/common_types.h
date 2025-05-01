@@ -3,6 +3,8 @@
 #define COMMON_TYPES_H
 
 #include <stdint.h>
+
+
 typedef struct
 {
     int x;

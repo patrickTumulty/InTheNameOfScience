@@ -77,7 +77,7 @@ static void renderWorld()
 void registerWorldSystem()
 {
     System worldSystem = {
-        .systemName = "World System",
+        .name = "World System",
         .start = start,
         .stop = stop,
         .renderUpdateWorldSpace = renderWorld,

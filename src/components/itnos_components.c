@@ -4,6 +4,7 @@
 #include "bool_mat.h"
 #include "pray_component.h"
 #include "pray_globals.h"
+#include "raylib.h"
 #include "tmem.h"
 #include <pthread.h>
 #include <stddef.h>
@@ -40,8 +41,31 @@ static void deinitWorldComponent(void *component)
     boolMatFree(worldComponent->navGrid);
 }
 
+static void initPathComponent(void *component)
+{
+    PathfindComponent *pathfindComponent = (PathfindComponent *) component;
+
+    pathfindComponent->path.path = nullptr;
+    pathfindComponent->path.pathLen = 0;
+    pathfindComponent->pathSet = false;
+    pathfindComponent->index = 0;
+    pathfindComponent->speed = 80;
+}
+
+static void freePathComponent(void *component)
+{
+    PathfindComponent *pathfindComponent = (PathfindComponent *) component;
+    if (pathfindComponent->path.path != nullptr)
+    {
+        tmemfree(pathfindComponent->path.path);
+        pathfindComponent->path.path = nullptr;
+    }
+}
 
 void registerComponents()
 {
     componentRegister(CID_WORLD, sizeof(WorldComponent), initWorldComponent, deinitWorldComponent);
+    componentRegister(CID_TRANSFORM, sizeof(TransformComponent), nullptr, nullptr);
+    componentRegister(CID_UNIT, 0, nullptr, nullptr);
+    componentRegister(CID_PATHFINDING, sizeof(PathfindComponent), initPathComponent, freePathComponent);
 }

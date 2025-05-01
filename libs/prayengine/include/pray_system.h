@@ -6,7 +6,7 @@
 
 typedef struct
 {
-    char systemName[50];
+    char name[50];
     void (*start)(void);
     void (*stop)(void);
     void (*gameUpdate)(void);

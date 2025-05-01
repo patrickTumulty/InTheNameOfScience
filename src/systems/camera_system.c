@@ -68,7 +68,7 @@ void gameUpdate()
 void registerCameraSystem()
 {
     System cameraSystem = {
-        .systemName = "Camera System",
+        .name = "Camera System",
         .start = start,
         .stop = close,
         .gameUpdate = gameUpdate,

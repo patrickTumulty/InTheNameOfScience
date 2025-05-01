@@ -27,8 +27,6 @@ void prayEngineRun()
 
         BeginMode2D(*getPrayCamera());
 
-        DrawCircle(10, 10, 100, RED);
-
         praySystemsRunRenderUpdateWorldSpace();
 
         EndMode2D();
