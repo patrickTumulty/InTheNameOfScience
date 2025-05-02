@@ -3,6 +3,7 @@
 #include "astar.h"
 #include "common_types.h"
 #include "common_utils.h"
+#include "float.h"
 #include "game_math.h"
 #include "itnos_components.h"
 #include "linked_list.h"
@@ -15,6 +16,11 @@
 #include "tmem.h"
 #include <math.h>
 #include <stdio.h>
+
+#define POS2VEC(POS) \
+    (Vector2) { .x = (POS).x, .y = (POS).y }
+#define VEC2POS(VEC) \
+    (Position) { .x = (VEC).x, .y = (VEC).y }
 
 static void clearPath(AStarPath *path)
 {
@@ -47,14 +53,33 @@ static void start()
 
     Entity *unitEntity = entityNew(C(CID_UNIT, CID_TRANSFORM, CID_PATHFINDING), 3);
     TransformComponent *transform = entityGetComponent(unitEntity, CID_TRANSFORM);
-    transform->position.x = (float) (worldComponent->cols / 2) * TILE_SIZE;
-    transform->position.y = (float) (worldComponent->rows / 2) * TILE_SIZE;
+    transform->position.x = ((float) worldComponent->cols / 2) * TILE_SIZE;
+    transform->position.y = ((float) worldComponent->rows / 2) * TILE_SIZE;
 
     entityRegistryRegister(unitEntity);
 }
 
 static void stop()
 {
+}
+
+Vector2 moveTowards(Vector2 current, Vector2 target, float maxDistanceDelta)
+{
+    float deltaX = target.x - current.x;
+    float deltaY = target.y - current.y;
+
+    float sqDist = (deltaX * deltaX) + (deltaY * deltaY);
+
+    if (feq(sqDist, 0.0f) || (maxDistanceDelta >= 0 && sqDist <= maxDistanceDelta * maxDistanceDelta))
+    {
+        return target;
+    }
+
+    float dist = sqrtf(sqDist);
+    return (Vector2) {
+        .x = current.x + (deltaX / dist * maxDistanceDelta),
+        .y = current.y + (deltaY / dist * maxDistanceDelta),
+    };
 }
 
 static void moveUnitAlongPath(TransformComponent *transform, PathfindComponent *pathfind)
@@ -73,23 +98,7 @@ static void moveUnitAlongPath(TransformComponent *transform, PathfindComponent *
         .y = (float) (temp.y * TILE_SIZE) + half,
     };
 
-    if (pathPoint.x > position->x)
-    {
-        position->x += 1 * pathfind->speed * GetFrameTime();
-    }
-    else if (pathPoint.x < position->x)
-    {
-        position->x -= 1 * pathfind->speed * GetFrameTime();
-    }
-
-    if (pathPoint.y > position->y)
-    {
-        position->y += 1 * pathfind->speed * GetFrameTime();
-    }
-    else if (pathPoint.y < position->y)
-    {
-        position->y -= 1 * pathfind->speed * GetFrameTime();
-    }
+    *position = moveTowards(*position, pathPoint, pathfind->speed * GetFrameTime());
 
     if (isInCircle(pathPoint, *position, 2))
     {

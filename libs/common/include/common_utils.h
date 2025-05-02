@@ -16,6 +16,8 @@
 
 #define VEC2EQ(V1, V2) (((V1).x == (V2).x) && ((V1).y == (V2).y))
 
+bool feq(float f1, float f2);
+
 void hexdump(uint8_t *buf, uint32_t bufLen);
 
 bool inBounds(int v, int min, int max);

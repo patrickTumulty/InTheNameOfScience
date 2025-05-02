@@ -1,8 +1,10 @@
 
 #include "common_utils.h"
+#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <float.h>
 
 void hexdump(uint8_t *buf, uint32_t bufLen)
 {
@@ -36,7 +38,8 @@ bool inBounds(int v, int min, int max)
 
 const char *rc2str(Rc rc)
 {
-    switch (rc) {
+    switch (rc)
+    {
         case RC_OK: return "OK";
         case RC_ERROR: return "ERROR";
         case RC_MEM_ALLOC_ERROR: return "MEM_ALLOC_ERROR";
@@ -45,4 +48,10 @@ const char *rc2str(Rc rc)
         case RC_NOT_FOUND: return "NOT_FOUND";
         default: return "UNKNOWN";
     }
+}
+
+
+bool feq(float f1, float f2)
+{
+    return fabs(f1 - f2) < FLT_EPSILON;
 }

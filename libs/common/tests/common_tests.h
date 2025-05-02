@@ -8,5 +8,6 @@ void registerLinkedListTests(void);
 void registerArrayListTests(void);
 void registerBoolMatTests(void);
 void registerTMemTests(void);
+void registerUtilsTests(void);
 
 #endif

@@ -37,3 +37,11 @@ Vector2 calculateRotation(Vector2 origin, float radians, float radius)
         .y = y + origin.y,
     };
 }
+
+
+float calculateSlope(Vector2 p1, Vector2 p2)
+{
+    float deltaX = p2.x - p1.x;
+    float deltaY = p2.y - p1.y;
+    return deltaX == 0 ? 1.0f : deltaY / deltaX;
+}

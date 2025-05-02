@@ -49,7 +49,7 @@ static void initPathComponent(void *component)
     pathfindComponent->path.pathLen = 0;
     pathfindComponent->pathSet = false;
     pathfindComponent->index = 0;
-    pathfindComponent->speed = 80;
+    pathfindComponent->speed = 200;
 }
 
 static void freePathComponent(void *component)

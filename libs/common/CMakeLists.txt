@@ -32,6 +32,7 @@ add_executable(${PROJECT_NAME}_test
     tests/array_list_tests.c
     tests/boolmat_tests.c
     tests/tmem_tests.c
+    tests/utils_tests.c
 )
 
 target_include_directories(${PROJECT_NAME}_test PUBLIC 
