@@ -16,12 +16,12 @@
 
 static void gameUpdate()
 {
-    Entity *worldEntity = entityRegistryLookupFirst(C(CID_WORLD), 1);
-    WorldComponent *worldComponent = entityGetComponent(worldEntity, CID_WORLD);
+    Entity *worldEntity = prayEntityLookup(C(CID_WORLD), 1);
+    WorldComponent *worldComponent = prayEntityGetComponent(worldEntity, CID_WORLD);
 
     if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
     {
-        Vector2 position = GetScreenToWorld2D(GetMousePosition(), *getPrayCamera());
+        Vector2 position = GetScreenToWorld2D(GetMousePosition(), *prayGetCamera());
         int row = (int) position.y / TILE_SIZE;
         int col = (int) position.x / TILE_SIZE;
 

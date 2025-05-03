@@ -4,6 +4,6 @@
 
 #include "raylib.h"
 
-Camera2D *getPrayCamera();
+Camera2D *prayGetCamera();
 
 #endif // PRAY_CAMERA_H

@@ -64,9 +64,9 @@ static void freePathComponent(void *component)
 
 void registerComponents()
 {
-    componentRegister(CID_WORLD, sizeof(WorldComponent), initWorldComponent, deinitWorldComponent);
-    componentRegister(CID_TRANSFORM, sizeof(TransformComponent), nullptr, nullptr);
-    componentRegister(CID_UNIT, 0, nullptr, nullptr);
-    componentRegister(CID_PATHFINDING, sizeof(PathfindComponent), initPathComponent, freePathComponent);
-    componentRegister(CID_SPRITE_2D, sizeof(Sprite2DComponent), nullptr, nullptr);
+    prayComponentRegister(CID_WORLD, sizeof(WorldComponent), initWorldComponent, deinitWorldComponent);
+    prayComponentRegister(CID_TRANSFORM, sizeof(TransformComponent), nullptr, nullptr);
+    prayComponentRegister(CID_UNIT, 0, nullptr, nullptr);
+    prayComponentRegister(CID_PATHFINDING, sizeof(PathfindComponent), initPathComponent, freePathComponent);
+    prayComponentRegister(CID_SPRITE_2D, sizeof(Sprite2DComponent), nullptr, nullptr);
 }

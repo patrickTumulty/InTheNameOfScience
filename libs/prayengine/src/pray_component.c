@@ -25,7 +25,7 @@ static ComponentInitializer *findComponentInitializer(u32 componentID)
     return nullptr;
 }
 
-Rc componentGetInitializer(u32 componentID, ComponentInitializer *componentInitialzer)
+Rc prayComponentGetInitializer(u32 componentID, ComponentInitializer *componentInitialzer)
 {
     ComponentInitializer *compInitializer = findComponentInitializer(componentID);
     if (compInitializer == nullptr)
@@ -36,7 +36,7 @@ Rc componentGetInitializer(u32 componentID, ComponentInitializer *componentIniti
     return RC_OK;
 }
 
-Rc componentRegister(u32 componentID,
+Rc prayComponentRegister(u32 componentID,
                      u64 componentSize,
                      Consumer initCallback,
                      Consumer deinitCallback)
@@ -58,12 +58,12 @@ Rc componentRegister(u32 componentID,
     return RC_OK;
 }
 
-void componnentInitialize()
+void prayComponnentInitialize()
 {
     llistInit(&componentsList);
 }
 
-void componentsDestroy()
+void prayComponentsDestroy()
 {
     LNode *node = llistPopFront(&componentsList);
     while (node != nullptr)

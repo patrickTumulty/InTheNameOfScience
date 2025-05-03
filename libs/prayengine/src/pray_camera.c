@@ -4,7 +4,7 @@
 
 static Camera2D camera = { 0 };
 
-Camera2D *getPrayCamera()
+Camera2D *prayGetCamera()
 {
     return &camera;
 }

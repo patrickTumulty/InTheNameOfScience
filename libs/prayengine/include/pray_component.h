@@ -15,12 +15,12 @@ typedef struct
     LNode lnode;
 } ComponentInitializer;
 
-Rc componentGetInitializer(u32 componentID, ComponentInitializer *componentInitialzer);
-Rc componentRegister(u32 componentID,
+Rc prayComponentGetInitializer(u32 componentID, ComponentInitializer *componentInitialzer);
+Rc prayComponentRegister(u32 componentID,
                      u64 componentSize,
                      Consumer initCallback,
                      Consumer deinitCallback);
-void componnentInitialize();
-void componentsDestroy();
+void prayComponnentInitialize();
+void prayComponentsDestroy();
 
 #endif // COMPONENTS_H

@@ -1,7 +1,7 @@
 
 #include "pray_engine.h"
-#include "pray_entity_registry.h"
 #include "pray_camera.h"
+#include "pray_entity_registry.h"
 #include "pray_globals.h"
 #include "pray_system.h"
 #include "tmem.h"
@@ -25,7 +25,7 @@ void prayEngineRun()
 
         ClearBackground(RAYWHITE);
 
-        BeginMode2D(*getPrayCamera());
+        BeginMode2D(*prayGetCamera());
 
         praySystemsRunRenderUpdateWorldSpace();
 
@@ -39,22 +39,18 @@ void prayEngineRun()
     praySystemsRunStop();
 
     CloseWindow();
-
 }
-
 
 void prayEngineInitialize()
 {
     tMemInit();
     praySystemsInit();
-    entityRegistryInit();
+    prayEntityRegistryInit();
 }
-
 
 void prayEngineDestroy()
 {
-    entityRegistryDestroy();
+    prayEntityRegistryDestroy();
     praySystemsDestroy();
     tMemDestroy();
 }
-

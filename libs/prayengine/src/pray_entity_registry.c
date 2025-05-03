@@ -1,6 +1,5 @@
 
 #include "pray_entity_registry.h"
-#include "array_list.h"
 #include "common_types.h"
 #include "linked_list.h"
 #include "pointer_list.h"
@@ -8,16 +7,15 @@
 #include <raylib.h>
 #include <stdarg.h>
 #include <stdint.h>
-#include <stdio.h>
 
 static PList entityList;
 
-void entityRegistryInit()
+void prayEntityRegistryInit()
 {
     plistNew(&entityList, 0);
 }
 
-void entityRegistryDestroy()
+void prayEntityRegistryDestroy()
 {
     for (int i = 0; i < entityList.length; i++)
     {
@@ -26,7 +24,7 @@ void entityRegistryDestroy()
         {
             continue;
         }
-        entityFree(entity);
+        prayEntityFree(entity);
     }
     plistFree(&entityList);
 }
@@ -49,7 +47,7 @@ static bool isEntityRegistered(Entity *entity)
 }
 
 
-Rc entityRegistryRegister(Entity *entity)
+Rc prayEntityRegister(Entity *entity)
 {
     if (isEntityRegistered(entity))
     {
@@ -66,7 +64,7 @@ Rc entityRegistryRegister(Entity *entity)
     return plistAppend(&entityList, entity);
 }
 
-Rc entityRegistryUnregister(Entity *entity)
+Rc prayEntityUnregister(Entity *entity)
 {
     for (int i = 0; i < entityList.length; i++)
     {
@@ -79,7 +77,7 @@ Rc entityRegistryUnregister(Entity *entity)
     return RC_NOT_FOUND;
 }
 
-Entity *entityRegistryLookupFirst(const u32 *componentIDs, u32 componentIDsCount)
+Entity *prayEntityLookup(const u32 *componentIDs, u32 componentIDsCount)
 {
     Entity *entity = nullptr;
     bool entityFound = false;
@@ -94,7 +92,7 @@ Entity *entityRegistryLookupFirst(const u32 *componentIDs, u32 componentIDsCount
         for (int j = 0; j < componentIDsCount; j++)
         {
             u32 componentID = componentIDs[j];
-            void *comp = entityGetComponent(entity, componentID);
+            void *comp = prayEntityGetComponent(entity, componentID);
             if (comp != nullptr)
             {
                 matches++;
@@ -112,7 +110,7 @@ EXIT:
     return entityFound ? entity : nullptr;
 }
 
-Rc entityRegistryLookupAll(LList *llist, const u32 *componentIDs, u32 componentIDsCount)
+Rc prayEntityLookupAll(LList *llist, const u32 *componentIDs, u32 componentIDsCount)
 {
     llistInit(llist);
     for (int i = 0; i < entityList.length; i++)
@@ -127,7 +125,7 @@ Rc entityRegistryLookupAll(LList *llist, const u32 *componentIDs, u32 componentI
         for (int j = 0; j < componentIDsCount; j++)
         {
             u32 componentID = componentIDs[j];
-            void *comp = entityGetComponent(entity, componentID);
+            void *comp = prayEntityGetComponent(entity, componentID);
             if (comp != nullptr)
             {
                 matches++;

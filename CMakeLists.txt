@@ -13,9 +13,10 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_definitions(TMEM_TRACK)
 endif()
 
+include(FetchContent)
 find_package(raylib QUIET)
 if (NOT raylib_FOUND)
-    include(FetchContent)
+    message(NOTICE "Declare 1")
     FetchContent_Declare(
         raylib
         GIT_REPOSITORY https://github.com/raysan5/raylib.git
@@ -29,6 +30,7 @@ if (NOT raylib_FOUND)
         set(BUILD_GAMES    OFF CACHE BOOL "" FORCE)
         add_subdirectory(${raylib_SOURCE_DIR} ${raylib_BINARY_DIR})
     endif()
+    FetchContent_MakeAvailable(raylib)
 endif()
 
 add_subdirectory(libs/prayengine)

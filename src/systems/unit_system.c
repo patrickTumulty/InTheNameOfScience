@@ -51,8 +51,8 @@ void calculateTrangle(Vector2 center, float roatationDegrees, float radius, Vect
 
 static void createEntity(float x, float y, char *texturePath)
 {
-    Entity *unitEntity = entityNew(C(CID_UNIT, CID_TRANSFORM, CID_PATHFINDING, CID_SPRITE_2D), 4);
-    TransformComponent *transform = entityGetComponent(unitEntity, CID_TRANSFORM);
+    Entity *unitEntity = prayEntityNew(C(CID_UNIT, CID_TRANSFORM, CID_PATHFINDING, CID_SPRITE_2D), 4);
+    TransformComponent *transform = prayEntityGetComponent(unitEntity, CID_TRANSFORM);
 
     transform->position.x = x * TILE_SIZE;
     transform->position.y = y * TILE_SIZE;
@@ -61,14 +61,14 @@ static void createEntity(float x, float y, char *texturePath)
     float textureWidth = (float) texture.width;
     float textureHeight = (float) texture.height;
 
-    Sprite2DComponent *sprite2D = entityGetComponent(unitEntity, CID_SPRITE_2D);
+    Sprite2DComponent *sprite2D = prayEntityGetComponent(unitEntity, CID_SPRITE_2D);
 
     sprite2D->texture = texture;
     sprite2D->source = (Rectangle) {0, 0, textureWidth, textureHeight};
     sprite2D->origin = (Vector2) {textureWidth / 2, textureHeight / 2};
     sprite2D->rotation = 90;
 
-    entityRegistryRegister(unitEntity);
+    prayEntityRegister(unitEntity);
 }
 
 static void start()
@@ -145,8 +145,8 @@ static void setPathForPathfindingUnits(WorldComponent *world, Vector2 position, 
     LListForEach(units, node)
     {
         Entity *entity = LListGetEntry(node, Entity);
-        TransformComponent *transform = entityGetComponent(entity, CID_TRANSFORM);
-        PathfindComponent *pathfind = entityGetComponent(entity, CID_PATHFINDING);
+        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
+        PathfindComponent *pathfind = prayEntityGetComponent(entity, CID_PATHFINDING);
 
         Position start = (Position) {
             .x = (int) transform->position.x / TILE_SIZE,
@@ -180,14 +180,14 @@ static void setPathForPathfindingUnits(WorldComponent *world, Vector2 position, 
 
 static void gameUpdate()
 {
-    Entity *worldEntity = entityRegistryLookupFirst(C(CID_WORLD), 1);
-    WorldComponent *world = entityGetComponent(worldEntity, CID_WORLD);
+    Entity *worldEntity = prayEntityLookup(C(CID_WORLD), 1);
+    WorldComponent *world = prayEntityGetComponent(worldEntity, CID_WORLD);
 
     int rows = (int) world->rows;
     int cols = (int) world->cols;
 
     LList units;
-    Rc rc = entityRegistryLookupAll(&units, C(CID_UNIT, CID_TRANSFORM, CID_PATHFINDING), 3);
+    Rc rc = prayEntityLookupAll(&units, C(CID_UNIT, CID_TRANSFORM, CID_PATHFINDING), 3);
     if (rc != RC_OK)
     {
         return;
@@ -197,8 +197,8 @@ static void gameUpdate()
     LListForEach(&units, node)
     {
         Entity *entity = LListGetEntry(node, Entity);
-        TransformComponent *transform = entityGetComponent(entity, CID_TRANSFORM);
-        PathfindComponent *pathfind = entityGetComponent(entity, CID_PATHFINDING);
+        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
+        PathfindComponent *pathfind = prayEntityGetComponent(entity, CID_PATHFINDING);
 
         moveUnitAlongPath(transform, pathfind);
     }
@@ -217,7 +217,7 @@ static void gameUpdate()
             }
         }
 
-        Vector2 position = GetScreenToWorld2D(GetMousePosition(), *getPrayCamera());
+        Vector2 position = GetScreenToWorld2D(GetMousePosition(), *prayGetCamera());
         int row = (int) position.y / TILE_SIZE;
         int col = (int) position.x / TILE_SIZE;
 

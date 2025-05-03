@@ -16,15 +16,15 @@ static World *worldComponent;
 
 static void start()
 {
-    worldEntity = entityNew(C(CID_WORLD), 1);
-    worldComponent = entityGetComponent(worldEntity, CID_WORLD);
-    entityRegistryRegister(worldEntity);
+    worldEntity = prayEntityNew(C(CID_WORLD), 1);
+    worldComponent = prayEntityGetComponent(worldEntity, CID_WORLD);
+    prayEntityRegister(worldEntity);
 }
 
 static void stop()
 {
-    entityRegistryUnregister(worldEntity);
-    entityFree(worldEntity);
+    prayEntityUnregister(worldEntity);
+    prayEntityFree(worldEntity);
 }
 
 static void renderWorld()

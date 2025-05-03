@@ -9,14 +9,14 @@
 
 static u64 entityCounter = 0;
 
-Entity *entityNew(const u32 *componentIDs,u32 componentIDsCount)
+Entity *prayEntityNew(const u32 *componentIDs,u32 componentIDsCount)
 {
     u64 size = sizeof(Entity);
     for (int i = 0; i < componentIDsCount; i++)
     {
         u32 componentID = componentIDs[i];
         ComponentInitializer compInitializer = {0};
-        if (componentGetInitializer(componentID, &compInitializer) != RC_OK) {
+        if (prayComponentGetInitializer(componentID, &compInitializer) != RC_OK) {
             continue;
         } 
         size += compInitializer.size;
@@ -40,7 +40,7 @@ Entity *entityNew(const u32 *componentIDs,u32 componentIDsCount)
     {
         u32 componentID = componentIDs[i];
         ComponentInitializer compInitializer = {0};
-        if (componentGetInitializer(componentID, &compInitializer) != RC_OK) {
+        if (prayComponentGetInitializer(componentID, &compInitializer) != RC_OK) {
             continue;
         } 
         ComponentPtr *cptr = alistGet(&newEntity->componentLookup, cidx++);
@@ -56,13 +56,13 @@ Entity *entityNew(const u32 *componentIDs,u32 componentIDsCount)
     return newEntity;
 }
 
-Entity *entityFree(Entity *entity)
+Entity *prayEntityFree(Entity *entity)
 {
     for (int i = 0; i < entity->componentLookup.length; i++)
     {
         ComponentPtr *cptr = alistGet(&entity->componentLookup, i);
         ComponentInitializer compInitializer = {0};
-        if (componentGetInitializer(cptr->componentID, &compInitializer) != RC_OK) {
+        if (prayComponentGetInitializer(cptr->componentID, &compInitializer) != RC_OK) {
             continue;
         } 
         if (compInitializer.deinitialize != nullptr)
@@ -75,7 +75,7 @@ Entity *entityFree(Entity *entity)
     return nullptr;
 }
 
-void *entityGetComponent(Entity *entity, u32 componentID)
+void *prayEntityGetComponent(Entity *entity, u32 componentID)
 {
     if (entity == nullptr)
     {

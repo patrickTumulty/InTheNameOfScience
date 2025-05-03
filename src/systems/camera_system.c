@@ -18,7 +18,7 @@ Vector2 getScreenCenter()
 
 void start()
 {
-    Camera2D *camera = getPrayCamera();
+    Camera2D *camera = prayGetCamera();
 
     cameraTarget = getScreenCenter();
     camera->target = cameraTarget;
@@ -34,7 +34,7 @@ void close()
 
 void gameUpdate()
 {
-    Camera2D *camera = getPrayCamera();
+    Camera2D *camera = prayGetCamera();
 
     cameraTarget.x -= (float) IsKeyDown(KEY_A) * (1.0f * GetFrameTime() * cameraSpeed);
     cameraTarget.x += (float) IsKeyDown(KEY_D) * (1.0f * GetFrameTime() * cameraSpeed);

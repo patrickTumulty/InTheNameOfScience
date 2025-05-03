@@ -8,7 +8,7 @@
 static void renderUpdate()
 {
     LList entities;
-    Rc rc = entityRegistryLookupAll(&entities, C(CID_SPRITE_2D), 1);
+    Rc rc = prayEntityLookupAll(&entities, C(CID_SPRITE_2D), 1);
     if (rc != RC_OK)
     {
         return;
@@ -18,12 +18,12 @@ static void renderUpdate()
     LListForEach(&entities, node)
     {
         Entity *entity = LListGetEntry(node, Entity);
-        Sprite2DComponent *sprite2d = entityGetComponent(entity, CID_SPRITE_2D);
+        Sprite2DComponent *sprite2d = prayEntityGetComponent(entity, CID_SPRITE_2D);
 
         Vector2 position = {0, 0};
         float rotation = 0;
 
-        TransformComponent *transform = entityGetComponent(entity, CID_TRANSFORM);
+        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
         if (transform != nullptr)
         {
             position = transform->position;

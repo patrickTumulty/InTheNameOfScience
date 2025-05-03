@@ -8,11 +8,11 @@
 #include <raylib.h>
 #include <stdint.h>
 
-void entityRegistryInit();
-void entityRegistryDestroy();
-Rc entityRegistryRegister(Entity *entity);
-Rc entityRegistryUnregister(Entity *entity);
-Entity *entityRegistryLookupFirst(const u32 *componentIDs, u32 componentIDsCount);
-Rc entityRegistryLookupAll(LList *llist, const u32 *componentIDs, u32 componentIDsCount);
+void prayEntityRegistryInit();
+void prayEntityRegistryDestroy();
+Rc prayEntityRegister(Entity *entity);
+Rc prayEntityUnregister(Entity *entity);
+Entity *prayEntityLookup(const u32 *componentIDs, u32 componentIDsCount);
+Rc prayEntityLookupAll(LList *llist, const u32 *componentIDs, u32 componentIDsCount);
 
 #endif

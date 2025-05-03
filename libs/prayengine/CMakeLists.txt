@@ -5,9 +5,10 @@ project(prayengine VERSION 0.1.0 LANGUAGES C)
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED True) # Optional, but recommended
 
+include(FetchContent)
 find_package(raylib QUIET)
 if (NOT raylib_FOUND)
-    include(FetchContent)
+    message(NOTICE "Declare")
     FetchContent_Declare(
         raylib
         GIT_REPOSITORY https://github.com/raysan5/raylib.git
@@ -45,9 +46,9 @@ add_executable(${PROJECT_NAME}_test
     tests/entity_tests.c
 )
 
-target_include_directories(${PROJECT_NAME}_test PUBLIC 
+target_include_directories(${PROJECT_NAME}_test PUBLIC
     ${CUNIT_INCLUDE_DIRS}
-    tests 
+    tests
 )
 
 target_link_libraries(${PROJECT_NAME}_test PUBLIC prayengine ${CUNIT_LIBRARIES})
