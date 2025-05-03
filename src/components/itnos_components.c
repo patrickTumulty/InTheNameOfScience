@@ -69,4 +69,5 @@ void registerComponents()
     prayComponentRegister(CID_UNIT, 0, nullptr, nullptr);
     prayComponentRegister(CID_PATHFINDING, sizeof(PathfindComponent), initPathComponent, freePathComponent);
     prayComponentRegister(CID_SPRITE_2D, sizeof(Sprite2DComponent), nullptr, nullptr);
+    prayComponentRegister(CID_COLLIDER_2D, sizeof(Collider2DComponent), nullptr, nullptr);
 }

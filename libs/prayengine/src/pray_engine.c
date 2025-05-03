@@ -4,6 +4,7 @@
 #include "pray_entity_registry.h"
 #include "pray_globals.h"
 #include "pray_system.h"
+#include "raylib.h"
 #include "tmem.h"
 
 void prayEngineRun()
@@ -12,6 +13,7 @@ void prayEngineRun()
 
     SetWindowState(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
     SetWindowMinSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+    SetExitKey(KEY_NULL);
 
     SetTargetFPS(60);
 

@@ -7,11 +7,12 @@
 #include "common_types.h"
 #include "raylib.h"
 
-typedef struct {
-    Texture2D texture; 
+typedef struct
+{
+    Texture2D texture;
     Rectangle source;
     Vector2 origin;
-    float rotation; // degrees 
+    float rotation; // degrees
 } Sprite2DComponent;
 
 typedef struct
@@ -22,10 +23,24 @@ typedef struct
     char **world;
 } WorldComponent;
 
-typedef struct {
+typedef struct
+{
     Vector2 position;
     float rotation; // 0.0 to 359.0
 } TransformComponent;
+
+typedef enum : u8 {
+    COLLIDER_2D_BOX = 0,
+    COLLIDER_2D_CIRCLE = 1,
+    COLLIDER_2D_TRIANGLE = 2,
+    COLLIDER_2D_POLY = 3,
+} Collider2DType;
+
+typedef struct
+{
+    Collider2DType type;
+    float radius;
+} Collider2DComponent;
 
 typedef enum : u32
 {
@@ -34,17 +49,20 @@ typedef enum : u32
     CID_TRANSFORM,
     CID_UNIT,
     CID_PATHFINDING,
-    CID_SPRITE_2D
+    CID_SPRITE_2D,
+    CID_COLLIDER_2D
 } ComponentID;
 
-typedef struct {
+typedef struct
+{
     AStarPath path;
     int index;
     float speed;
     bool pathSet;
 } PathfindComponent;
 
-#define C(...) (ComponentID[]) { __VA_ARGS__ }
+#define C(...) \
+    (ComponentID[]) { __VA_ARGS__ }
 
 void registerComponents();
 

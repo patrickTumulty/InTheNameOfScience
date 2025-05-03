@@ -19,18 +19,18 @@ static void gameUpdate()
     Entity *worldEntity = prayEntityLookup(C(CID_WORLD), 1);
     WorldComponent *worldComponent = prayEntityGetComponent(worldEntity, CID_WORLD);
 
-    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
-    {
-        Vector2 position = GetScreenToWorld2D(GetMousePosition(), *prayGetCamera());
-        int row = (int) position.y / TILE_SIZE;
-        int col = (int) position.x / TILE_SIZE;
-
-        if (inBounds(row, 0, (int) worldComponent->rows) && inBounds(col, 0, (int) worldComponent->cols))
-        {
-            worldComponent->world[row][col] = 'X';
-            boolMatSet(worldComponent->navGrid, col, row, false);
-        }
-    }
+    // if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
+    // {
+    //     Vector2 position = GetScreenToWorld2D(GetMousePosition(), *prayGetCamera());
+    //     int row = (int) position.y / TILE_SIZE;
+    //     int col = (int) position.x / TILE_SIZE;
+    //
+    //     if (inBounds(row, 0, (int) worldComponent->rows) && inBounds(col, 0, (int) worldComponent->cols))
+    //     {
+    //         worldComponent->world[row][col] = 'X';
+    //         boolMatSet(worldComponent->navGrid, col, row, false);
+    //     }
+    // }
     // else if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     // {
         // Vector2 position = GetScreenToWorld2D(GetMousePosition(), *getPrayCamera());

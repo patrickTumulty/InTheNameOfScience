@@ -7,6 +7,7 @@
 #include "common_utils.h"
 #include <math.h>
 #include <stdint.h>
+#include <stdio.h>
 
 typedef struct
 {

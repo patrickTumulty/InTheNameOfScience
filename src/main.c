@@ -29,8 +29,8 @@ int main(void)
     registerWorldSystem();
     registerPathingSystem();
     registerCameraSystem();
-    registerUnitSystem();
     registerSprite2DSystem();
+    registerUnitSystem();
 
     prayEngineRun();
 
