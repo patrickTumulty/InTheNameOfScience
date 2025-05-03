@@ -15,7 +15,7 @@
 #include "raylib.h"
 #include "tmem.h"
 #include <math.h>
-#include <stdio.h>
+
 
 #define POS2VEC(POS) \
     (Vector2) { .x = (POS).x, .y = (POS).y }
@@ -32,6 +32,9 @@ static void clearPath(AStarPath *path)
     }
 }
 
+#define TEXTURE_ARROW_RED "assets/arrow-red.png"
+#define TEXTURE_ARROW_BLUE "assets/arrow-blue.png"
+
 bool isInCircle(Vector2 circleCenter, Vector2 p, float radius)
 {
     float deltaX = p.x - circleCenter.x;
@@ -46,17 +49,32 @@ void calculateTrangle(Vector2 center, float roatationDegrees, float radius, Vect
     points[2] = calculateRotation(center, DEG2RAD * (240 + roatationDegrees), radius);
 }
 
-static void start()
+static void createEntity(float x, float y, char *texturePath)
 {
-    Entity *worldEntity = entityRegistryLookupFirst(C(CID_WORLD), 1);
-    WorldComponent *worldComponent = entityGetComponent(worldEntity, CID_WORLD);
-
-    Entity *unitEntity = entityNew(C(CID_UNIT, CID_TRANSFORM, CID_PATHFINDING), 3);
+    Entity *unitEntity = entityNew(C(CID_UNIT, CID_TRANSFORM, CID_PATHFINDING, CID_SPRITE_2D), 4);
     TransformComponent *transform = entityGetComponent(unitEntity, CID_TRANSFORM);
-    transform->position.x = ((float) worldComponent->cols / 2) * TILE_SIZE;
-    transform->position.y = ((float) worldComponent->rows / 2) * TILE_SIZE;
+
+    transform->position.x = x * TILE_SIZE;
+    transform->position.y = y * TILE_SIZE;
+
+    Texture2D texture = LoadTexture(texturePath);
+    float textureWidth = (float) texture.width;
+    float textureHeight = (float) texture.height;
+
+    Sprite2DComponent *sprite2D = entityGetComponent(unitEntity, CID_SPRITE_2D);
+
+    sprite2D->texture = texture;
+    sprite2D->source = (Rectangle) {0, 0, textureWidth, textureHeight};
+    sprite2D->origin = (Vector2) {textureWidth / 2, textureHeight / 2};
+    sprite2D->rotation = 90;
 
     entityRegistryRegister(unitEntity);
+}
+
+static void start()
+{
+    createEntity(2, 2, TEXTURE_ARROW_BLUE);
+    createEntity(10, 10, TEXTURE_ARROW_RED);
 }
 
 static void stop()
@@ -148,16 +166,6 @@ static void setPathForPathfindingUnits(WorldComponent *world, Vector2 position, 
 
         if (pathfind->path.path != nullptr && pathfind->path.pathLen > 0)
         {
-            for (int i = 0; i < world->rows; i++)
-            {
-                for (int j = 0; j < world->cols; j++)
-                {
-                    if (world->world[i][j] == '3' || world->world[i][j] == '2')
-                    {
-                        world->world[i][j] = 0;
-                    }
-                }
-            }
 
             pathfind->pathSet = true;
 
@@ -173,10 +181,10 @@ static void setPathForPathfindingUnits(WorldComponent *world, Vector2 position, 
 static void gameUpdate()
 {
     Entity *worldEntity = entityRegistryLookupFirst(C(CID_WORLD), 1);
-    WorldComponent *worldComponent = entityGetComponent(worldEntity, CID_WORLD);
+    WorldComponent *world = entityGetComponent(worldEntity, CID_WORLD);
 
-    int rows = (int) worldComponent->rows;
-    int cols = (int) worldComponent->cols;
+    int rows = (int) world->rows;
+    int cols = (int) world->cols;
 
     LList units;
     Rc rc = entityRegistryLookupAll(&units, C(CID_UNIT, CID_TRANSFORM, CID_PATHFINDING), 3);
@@ -197,37 +205,26 @@ static void gameUpdate()
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
+
+        for (int i = 0; i < world->rows; i++)
+        {
+            for (int j = 0; j < world->cols; j++)
+            {
+                if (world->world[i][j] == '3' || world->world[i][j] == '2')
+                {
+                    world->world[i][j] = 0;
+                }
+            }
+        }
+
         Vector2 position = GetScreenToWorld2D(GetMousePosition(), *getPrayCamera());
         int row = (int) position.y / TILE_SIZE;
         int col = (int) position.x / TILE_SIZE;
 
         if (inBounds(row, 0, rows) && inBounds(col, 0, cols))
         {
-            setPathForPathfindingUnits(worldComponent, position, &units);
+            setPathForPathfindingUnits(world, position, &units);
         }
-    }
-}
-
-static void renderUpdateWorldSpace()
-{
-    LList units;
-    Rc rc = entityRegistryLookupAll(&units, C(CID_UNIT, CID_TRANSFORM), 2);
-    if (rc != RC_OK)
-    {
-        return;
-    }
-
-    LNode *node = nullptr;
-    LListForEach(&units, node)
-    {
-        Entity *entity = LListGetEntry(node, Entity);
-        TransformComponent *transform = entityGetComponent(entity, CID_TRANSFORM);
-
-        Vector2 points[3];
-
-        calculateTrangle(transform->position, transform->rotation, 30, points);
-        DrawCircle((int) points[0].x, (int) points[0].y, 10, BLACK);
-        DrawTriangle(points[2], points[1], points[0], RED);
     }
 }
 
@@ -238,7 +235,6 @@ void registerUnitSystem()
         .start = start,
         .stop = stop,
         .gameUpdate = gameUpdate,
-        .renderUpdateWorldSpace = renderUpdateWorldSpace,
     };
 
     praySystemsRegister(system);

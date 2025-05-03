@@ -68,4 +68,5 @@ void registerComponents()
     componentRegister(CID_TRANSFORM, sizeof(TransformComponent), nullptr, nullptr);
     componentRegister(CID_UNIT, 0, nullptr, nullptr);
     componentRegister(CID_PATHFINDING, sizeof(PathfindComponent), initPathComponent, freePathComponent);
+    componentRegister(CID_SPRITE_2D, sizeof(Sprite2DComponent), nullptr, nullptr);
 }

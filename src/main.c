@@ -3,6 +3,7 @@
 #include "itnos_components.h"
 #include "pathfinding_system.h"
 #include "pray_engine.h"
+#include "sprite2d_system.h"
 #include "unit_system.h"
 #include "world_system.h"
 #include <sys/types.h>
@@ -29,6 +30,7 @@ int main(void)
     registerPathingSystem();
     registerCameraSystem();
     registerUnitSystem();
+    registerSprite2DSystem();
 
     prayEngineRun();
 

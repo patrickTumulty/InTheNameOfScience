@@ -7,6 +7,13 @@
 #include "common_types.h"
 #include "raylib.h"
 
+typedef struct {
+    Texture2D texture; 
+    Rectangle source;
+    Vector2 origin;
+    float rotation; // degrees 
+} Sprite2DComponent;
+
 typedef struct
 {
     u32 rows;
@@ -27,6 +34,7 @@ typedef enum : u32
     CID_TRANSFORM,
     CID_UNIT,
     CID_PATHFINDING,
+    CID_SPRITE_2D
 } ComponentID;
 
 typedef struct {
