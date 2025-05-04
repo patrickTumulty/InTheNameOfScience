@@ -144,7 +144,7 @@ static void stop()
     UnloadShader(outlineShader);
 }
 
-static void moveUnitAlongPath(Entity *entity, TransformComponent *transform, PathfindComponent *pathfind)
+static void moveUnitAlongPath(TransformComponent *transform, PathfindComponent *pathfind)
 {
     if (pathfind->pathSet == false)
     {
@@ -169,11 +169,6 @@ static void moveUnitAlongPath(Entity *entity, TransformComponent *transform, Pat
         {
             clearPath(&pathfind->path);
             pathfind->pathSet = false;
-            Sprite2DComponent *sprite2D = prayEntityGetComponent(entity, CID_SPRITE_2D);
-            if (sprite2D != nullptr && sprite2D->shader != nullptr)
-            {
-                setOutlineEnable(sprite2D->shader, false);
-            }
         }
         else
         {
@@ -279,7 +274,7 @@ static void gameUpdate()
         TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
         PathfindComponent *pathfind = prayEntityGetComponent(entity, CID_PATHFINDING);
 
-        moveUnitAlongPath(entity, transform, pathfind);
+        moveUnitAlongPath(transform, pathfind);
     }
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
