@@ -15,10 +15,14 @@
 #include "pray_utils.h"
 #include "raylib.h"
 #include "tmem.h"
-#include <math.h>
-#include <stdio.h>
+
+static Texture2D textureBlue;
+static Texture2D textureRed;
+static Shader outlineShader;
 
 
+#define TEXTURE_ARROW_RED "assets/arrow-red2.png"
+#define TEXTURE_ARROW_BLUE "assets/arrow-blue2.png"
 #define POS2VEC(POS) \
     (Vector2) { .x = (POS).x, .y = (POS).y }
 #define VEC2POS(VEC) \
@@ -34,8 +38,23 @@ static void clearPath(AStarPath *path)
     }
 }
 
-#define TEXTURE_ARROW_RED "assets/arrow-red.png"
-#define TEXTURE_ARROW_BLUE "assets/arrow-blue.png"
+
+static void setOutlineShaderProperties(Shader *shader, Texture texture, bool enabled)
+{
+    float outlineSize = enabled ? 1.0f : 0.0f;
+    float outlineColor[4] = {1.0f, 0.0f, 0.0f, 1.0f}; // Normalized RED color
+    float textureSize[2] = {(float) texture.width, (float) texture.height};
+
+    // Get shader locations
+    int outlineSizeLoc = GetShaderLocation(*shader, "outlineSize");
+    int outlineColorLoc = GetShaderLocation(*shader, "outlineColor");
+    int textureSizeLoc = GetShaderLocation(*shader, "textureSize");
+
+    // Set shader values (they can be changed later)
+    SetShaderValue(*shader, outlineSizeLoc, &outlineSize, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(*shader, outlineColorLoc, outlineColor, SHADER_UNIFORM_VEC4);
+    SetShaderValue(*shader, textureSizeLoc, textureSize, SHADER_UNIFORM_VEC2);
+}
 
 bool isInCircle(Vector2 circleCenter, Vector2 p, float radius)
 {
@@ -51,7 +70,23 @@ void calculateTrangle(Vector2 center, float roatationDegrees, float radius, Vect
     points[2] = calculateRotation(center, DEG2RAD * (240 + roatationDegrees), radius);
 }
 
-static void createEntity(float x, float y, char *texturePath)
+static void configureShader(Entity *entity, struct Sprite2DComponent *sprite2D)
+{
+    if (sprite2D->shader == nullptr)
+    {
+        return;
+    }
+
+    SelectableComponent *selectable = prayEntityGetComponent(entity, CID_SELECTABLE);
+    if (selectable == nullptr)
+    {
+        return;
+    }
+
+    setOutlineShaderProperties(sprite2D->shader, sprite2D->texture, selectable->selected);
+}
+
+static void createEntity(float x, float y, Texture2D texture, Shader *shader)
 {
     ComponentID cids[] = {
         CID_UNIT,
@@ -59,6 +94,7 @@ static void createEntity(float x, float y, char *texturePath)
         CID_PATHFINDING,
         CID_SPRITE_2D,
         CID_COLLIDER_2D,
+        CID_SELECTABLE,
     };
 
     u32 cidsLen = sizeof(cids) / sizeof(ComponentID);
@@ -69,7 +105,6 @@ static void createEntity(float x, float y, char *texturePath)
     transform->position.x = x * TILE_SIZE;
     transform->position.y = y * TILE_SIZE;
 
-    Texture2D texture = LoadTexture(texturePath);
     float textureWidth = (float) texture.width;
     float textureHeight = (float) texture.height;
 
@@ -79,6 +114,8 @@ static void createEntity(float x, float y, char *texturePath)
     sprite2D->source = (Rectangle) {0, 0, textureWidth, textureHeight};
     sprite2D->origin = (Vector2) {textureWidth / 2, textureHeight / 2};
     sprite2D->rotation = 90;
+    sprite2D->shader = shader;
+    sprite2D->shaderCallback = configureShader;
 
     Collider2DComponent *collider2D = prayEntityGetComponent(unitEntity, CID_COLLIDER_2D);
     collider2D->type = COLLIDER_2D_TRIANGLE;
@@ -89,15 +126,25 @@ static void createEntity(float x, float y, char *texturePath)
 
 static void start()
 {
-    createEntity(2, 2, TEXTURE_ARROW_BLUE);
-    createEntity(10, 10, TEXTURE_ARROW_RED);
+    textureBlue = LoadTexture(TEXTURE_ARROW_BLUE);
+    textureRed = LoadTexture(TEXTURE_ARROW_RED);
+    outlineShader = LoadShader(nullptr, TextFormat("shaders/glsl330/outline.fs", 330));
+
+    setOutlineShaderProperties(&outlineShader, textureBlue, false);
+    setOutlineShaderProperties(&outlineShader, textureRed, false);
+
+    createEntity(2, 2, textureBlue, &outlineShader);
+    createEntity(10, 10, textureRed, &outlineShader);
 }
 
 static void stop()
 {
+    UnloadTexture(textureBlue);
+    UnloadTexture(textureRed);
+    UnloadShader(outlineShader);
 }
 
-static void moveUnitAlongPath(TransformComponent *transform, PathfindComponent *pathfind)
+static void moveUnitAlongPath(Entity *entity, TransformComponent *transform, PathfindComponent *pathfind)
 {
     if (pathfind->pathSet == false)
     {
@@ -122,6 +169,11 @@ static void moveUnitAlongPath(TransformComponent *transform, PathfindComponent *
         {
             clearPath(&pathfind->path);
             pathfind->pathSet = false;
+            Sprite2DComponent *sprite2D = prayEntityGetComponent(entity, CID_SPRITE_2D);
+            if (sprite2D != nullptr && sprite2D->shader != nullptr)
+            {
+                setOutlineEnable(sprite2D->shader, false);
+            }
         }
         else
         {
@@ -171,27 +223,39 @@ static void setPathForPathfindingUnits(WorldComponent *world, Vector2 position, 
 
 static void renderUpdate()
 {
-    // LList units;
-    // Rc rc = prayEntityLookupAll(&units, C(CID_TRANSFORM, CID_COLLIDER_2D), 2);
-    //
-    // LNode *node = nullptr;
-    // LListForEach(&units, node)
-    // {
-    //     Entity *entity = LListGetEntry(node, Entity);
-    //     TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
-    //     Collider2DComponent *collider2D = prayEntityGetComponent(entity, CID_COLLIDER_2D);
-    //
-    //     Color green = GREEN;
-    //     green.a = 120;
-    //
-    //     DrawCircle((int) transform->position.x,
-    //                (int) transform->position.y,
-    //                collider2D->radius,
-    //                green);
-    // }
+    LList units;
+    Rc rc = prayEntityLookupAll(&units, C(CID_TRANSFORM, CID_COLLIDER_2D), 2);
+
+    LNode *node = nullptr;
+    LListForEach(&units, node)
+    {
+        Entity *entity = LListGetEntry(node, Entity);
+        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
+        Collider2DComponent *collider2D = prayEntityGetComponent(entity, CID_COLLIDER_2D);
+
+        Color green = GREEN;
+        green.a = 120;
+
+        DrawCircle((int) transform->position.x,
+                   (int) transform->position.y,
+                   collider2D->radius,
+                   green);
+    }
 }
 
-static Entity *selectedEntity;
+static void clearAStarPath(WorldComponent *world)
+{
+    for (int i = 0; i < world->rows; i++)
+    {
+        for (int j = 0; j < world->cols; j++)
+        {
+            if (world->world[i][j] == '3' || world->world[i][j] == '2')
+            {
+                world->world[i][j] = 0;
+            }
+        }
+    }
+}
 
 static void gameUpdate()
 {
@@ -202,7 +266,7 @@ static void gameUpdate()
     int cols = (int) world->cols;
 
     LList units;
-    Rc rc = prayEntityLookupAll(&units, C(CID_UNIT, CID_TRANSFORM, CID_PATHFINDING, CID_COLLIDER_2D), 3);
+    Rc rc = prayEntityLookupAll(&units, C(CID_UNIT, CID_TRANSFORM, CID_PATHFINDING, CID_COLLIDER_2D, CID_SPRITE_2D), 3);
     if (rc != RC_OK)
     {
         return;
@@ -215,39 +279,12 @@ static void gameUpdate()
         TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
         PathfindComponent *pathfind = prayEntityGetComponent(entity, CID_PATHFINDING);
 
-        moveUnitAlongPath(transform, pathfind);
-    }
-
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-    {
-        LNode *node = nullptr;
-        LListForEach(&units, node)
-        {
-            Entity *entity = LListGetEntry(node, Entity);
-            TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
-            Collider2DComponent *collider2D = prayEntityGetComponent(entity, CID_COLLIDER_2D);
-
-            Vector2 position = GetScreenToWorld2D(GetMousePosition(), *prayGetCamera());
-            if (CheckCollisionPointCircle(position, transform->position, collider2D->radius))
-            {
-                selectedEntity = entity;
-                break;
-            }
-        }
+        moveUnitAlongPath(entity, transform, pathfind);
     }
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
     {
-        for (int i = 0; i < world->rows; i++)
-        {
-            for (int j = 0; j < world->cols; j++)
-            {
-                if (world->world[i][j] == '3' || world->world[i][j] == '2')
-                {
-                    world->world[i][j] = 0;
-                }
-            }
-        }
+        clearAStarPath(world);
 
         Vector2 position = GetScreenToWorld2D(GetMousePosition(), *prayGetCamera());
         int row = (int) position.y / TILE_SIZE;
@@ -255,11 +292,11 @@ static void gameUpdate()
 
         if (inBounds(row, 0, rows) && inBounds(col, 0, cols))
         {
-            if (selectedEntity != nullptr)
-            {
-                setPathForPathfindingUnits(world, position, selectedEntity);
-                selectedEntity = nullptr;
-            }
+            // if (selectedEntity != nullptr)
+            // {
+            // setPathForPathfindingUnits(world, position, selectedEntity);
+            // selectedEntity = nullptr;
+            // }
         }
     }
 }
@@ -271,7 +308,7 @@ void registerUnitSystem()
         .start = start,
         .stop = stop,
         .gameUpdate = gameUpdate,
-        .renderUpdateWorldSpace = renderUpdate,
+        // .renderUpdateWorldSpace = renderUpdate,
     };
 
     praySystemsRegister(system);

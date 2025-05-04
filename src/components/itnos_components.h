@@ -5,15 +5,27 @@
 #include "astar.h"
 #include "bool_mat.h"
 #include "common_types.h"
+#include "pray_entity.h"
 #include "raylib.h"
 
-typedef struct
+struct Sprite2DComponent;
+
+typedef void (*PreShaderCallback)(Entity *entity, struct Sprite2DComponent *sprite2D);
+
+typedef struct Sprite2DComponent
 {
     Texture2D texture;
     Rectangle source;
     Vector2 origin;
     float rotation; // degrees
+    Shader *shader;
+    PreShaderCallback shaderCallback;
 } Sprite2DComponent;
+
+typedef struct
+{
+    bool selected;
+} SelectableComponent;
 
 typedef struct
 {
@@ -29,7 +41,8 @@ typedef struct
     float rotation; // 0.0 to 359.0
 } TransformComponent;
 
-typedef enum : u8 {
+typedef enum : u8
+{
     COLLIDER_2D_BOX = 0,
     COLLIDER_2D_CIRCLE = 1,
     COLLIDER_2D_TRIANGLE = 2,
@@ -50,7 +63,8 @@ typedef enum : u32
     CID_UNIT,
     CID_PATHFINDING,
     CID_SPRITE_2D,
-    CID_COLLIDER_2D
+    CID_COLLIDER_2D,
+    CID_SELECTABLE
 } ComponentID;
 
 typedef struct

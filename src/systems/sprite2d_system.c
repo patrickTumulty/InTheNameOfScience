@@ -32,12 +32,24 @@ static void renderUpdate()
 
         Rectangle source = sprite2d->source;
 
+        if (sprite2d->shader != nullptr)
+        {
+            BeginShaderMode(*sprite2d->shader);
+
+            sprite2d->shaderCallback(entity, sprite2d);
+        }
+
         DrawTexturePro(sprite2d->texture,
                        sprite2d->source,
                        (Rectangle) {position.x, position.y, source.width, source.height},
                        sprite2d->origin,
                        rotation + sprite2d->rotation,
                        WHITE);
+
+        if (sprite2d->shader != nullptr)
+        {
+            EndShaderMode();
+        }
     }
 }
 

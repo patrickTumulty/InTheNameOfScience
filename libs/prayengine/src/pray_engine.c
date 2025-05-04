@@ -9,13 +9,6 @@
 
 void prayEngineRun()
 {
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "In the Name of Science!");
-
-    SetWindowState(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
-    SetWindowMinSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-    SetExitKey(KEY_NULL);
-
-    SetTargetFPS(60);
 
     praySystemsRunStart();
 
@@ -48,6 +41,14 @@ void prayEngineInitialize()
     tMemInit();
     praySystemsInit();
     prayEntityRegistryInit();
+
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "In the Name of Science!");
+
+    SetWindowState(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
+    SetWindowMinSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+    SetExitKey(KEY_NULL);
+
+    SetTargetFPS(60);
 }
 
 void prayEngineDestroy()
