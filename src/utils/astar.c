@@ -1,10 +1,10 @@
 
 #include "astar.h"
 #include "bool_mat.h"
-#include "linked_list.h"
-#include "tmem.h"
 #include "common_types.h"
 #include "common_utils.h"
+#include "linked_list.h"
+#include "tmem.h"
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -159,8 +159,8 @@ static void tracePath(AStarCell *destCell, AStarCell **cellMat, AStarPath *path)
     {
         AStarCell *cell = LListGetEntry(node, AStarCell);
         Position *pos = &path->path[index--];
-        pos->x = cell->parent.x;
-        pos->y = cell->parent.y;
+        pos->x = cell->position.x;
+        pos->y = cell->position.y;
     }
 
     path->pathLen = tracePath.size;
@@ -270,5 +270,5 @@ void astar(Position startPos, Position destPos, const BoolMat *navGrid, AStarPat
 EXIT:
 
     closedMat = boolMatFree(closedMat);
-    tmemfree((void*)cellMat);
+    tmemfree((void *) cellMat);
 }

@@ -10,6 +10,8 @@
 #include "pray_system.h"
 #include "raylib.h"
 #include <math.h>
+#include <stdio.h>
+#include <string.h>
 
 static int selectedEntitiesCount = 0;
 static PList selectedEntities;
@@ -25,8 +27,27 @@ static void start()
     plistNew(&selectedEntities, 10);
 }
 
+static bool entitySelected(Entity *entity)
+{
+    // TODO: Use a SET here instead of linear search
+    for (int i = 0; i < selectedEntitiesCount; i++)
+    {
+        Entity *selected = plistGet(&selectedEntities, i);
+        if (selected->entityId == entity->entityId)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 static void addSelectedEntity(Entity *entity)
 {
+    if (entitySelected(entity))
+    {
+        return;
+    }
+
     if (selectedEntitiesCount < selectedEntities.length)
     {
         plistSet(&selectedEntities, selectedEntitiesCount, entity);
@@ -166,7 +187,14 @@ void registerSelectionSystem()
     praySystemsRegister(system);
 }
 
-Entity *selectionGetSelectedEntity()
+void selectionGetSelectedEntities(PList *selected)
 {
-    return nullptr;
+    memcpy(selected, &selectedEntities, sizeof(PList));
+    selected->length = selectedEntitiesCount;
+}
+
+
+bool selectionEntitiesSelected()
+{
+    return selectedEntitiesCount != 0;
 }

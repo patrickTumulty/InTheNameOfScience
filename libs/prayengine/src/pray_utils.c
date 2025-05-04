@@ -29,3 +29,8 @@ Vector2 prayVector2Add(Vector2 v1, Vector2 v2)
     v1.y += v2.y;
     return v1;
 }
+
+bool prayVector2Equals(Vector2 v1, Vector2 v2)
+{
+    return feq(v1.x, v2.x) && feq(v1.y, v2.y);
+}

@@ -7,6 +7,7 @@
 #include "game_math.h"
 #include "itnos_components.h"
 #include "linked_list.h"
+#include "pointer_list.h"
 #include "pray_camera.h"
 #include "pray_entity.h"
 #include "pray_entity_registry.h"
@@ -14,7 +15,10 @@
 #include "pray_system.h"
 #include "pray_utils.h"
 #include "raylib.h"
+#include "selection_system.h"
 #include "tmem.h"
+#include <stdio.h>
+#include <threads.h>
 
 static Texture2D textureBlue;
 static Texture2D textureRed;
@@ -183,35 +187,48 @@ static void moveUnitAlongPath(TransformComponent *transform, PathfindComponent *
     }
 }
 
-static void setPathForPathfindingUnits(WorldComponent *world, Vector2 position, Entity *entity)
+static void setPathForPathfindingUnits(WorldComponent *world, Vector2 position)
 {
-    TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
-    PathfindComponent *pathfind = prayEntityGetComponent(entity, CID_PATHFINDING);
-
-    Position start = (Position) {
-        .x = (int) transform->position.x / TILE_SIZE,
-        .y = (int) transform->position.y / TILE_SIZE,
-    };
-
-    Position dest = (Position) {
-        .x = (int) position.x / TILE_SIZE,
-        .y = (int) position.y / TILE_SIZE,
-    };
-
-    clearPath(&pathfind->path);
-    pathfind->index = 0;
-    pathfind->pathSet = false;
-
-    astar(start, dest, world->navGrid, &pathfind->path);
-
-    if (pathfind->path.path != nullptr && pathfind->path.pathLen > 0)
+    if (!selectionEntitiesSelected())
     {
-        pathfind->pathSet = true;
+        return;
+    }
 
-        for (int i = 0; i < pathfind->path.pathLen; i++)
+    PList selectedEntities;
+
+    selectionGetSelectedEntities(&selectedEntities);
+
+    for (int i = 0; i < selectedEntities.length; i++)
+    {
+        Entity *entity = plistGet(&selectedEntities, i);
+        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
+        PathfindComponent *pathfind = prayEntityGetComponent(entity, CID_PATHFINDING);
+
+        Position start = (Position) {
+            .x = (int) transform->position.x / TILE_SIZE,
+            .y = (int) transform->position.y / TILE_SIZE,
+        };
+
+        Position dest = (Position) {
+            .x = (int) position.x / TILE_SIZE,
+            .y = (int) position.y / TILE_SIZE,
+        };
+
+        clearPath(&pathfind->path);
+        pathfind->index = 0;
+        pathfind->pathSet = false;
+
+        astar(start, dest, world->navGrid, &pathfind->path);
+
+        if (pathfind->path.path != nullptr && pathfind->path.pathLen > 0)
         {
-            Position p = pathfind->path.path[i];
-            world->world[p.y][p.x] = '3';
+            pathfind->pathSet = true;
+
+            for (int i = 0; i < pathfind->path.pathLen; i++)
+            {
+                Position p = pathfind->path.path[i];
+                world->world[p.y][p.x] = '3';
+            }
         }
     }
 }
@@ -287,11 +304,7 @@ static void gameUpdate()
 
         if (inBounds(row, 0, rows) && inBounds(col, 0, cols))
         {
-            // if (selectedEntity != nullptr)
-            // {
-            // setPathForPathfindingUnits(world, position, selectedEntity);
-            // selectedEntity = nullptr;
-            // }
+            setPathForPathfindingUnits(world, position);
         }
     }
 }

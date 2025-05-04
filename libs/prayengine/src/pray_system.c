@@ -41,8 +41,6 @@ Rc praySystemsRegister(System system)
 
 void praySystemsRunStart()
 {
-    // auto tid = pthread_self();
-    // printf("start %lu\n", tid);
     for (int i = 0; i < systems.length; i++)
     {
         System *system = alistGet(&systems, i);
@@ -52,8 +50,6 @@ void praySystemsRunStart()
 
 void praySystemsRunStop()
 {
-    // auto tid = pthread_self();
-    // printf("stop %lu\n", tid);
     for (int i = 0; i < systems.length; i++)
     {
         System *system = alistGet(&systems, i);
@@ -63,8 +59,6 @@ void praySystemsRunStop()
 
 void praySystemsRunGameUpdate()
 {
-    // auto tid = pthread_self();
-    // printf("game update %lu\n", tid);
     for (int i = 0; i < systems.length; i++)
     {
         System *system = alistGet(&systems, i);
@@ -74,8 +68,6 @@ void praySystemsRunGameUpdate()
 
 void praySystemsRunRenderUpdateWorldSpace()
 {
-    // auto tid = pthread_self();
-    // printf("render world update %lu\n", tid);
     for (int i = 0; i < systems.length; i++)
     {
         System *system = alistGet(&systems, i);
@@ -85,8 +77,6 @@ void praySystemsRunRenderUpdateWorldSpace()
 
 void praySystemsRunRenderUpdateScreenSpace()
 {
-    // auto tid = pthread_self();
-    // printf("render screen update %lu\n", tid);
     for (int i = 0; i < systems.length; i++)
     {
         System *system = alistGet(&systems, i);

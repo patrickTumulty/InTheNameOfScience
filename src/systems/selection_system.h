@@ -2,10 +2,10 @@
 #ifndef SELECTION_SYSTEM_H
 #define SELECTION_SYSTEM_H
 
-#include "pray_entity.h"
+#include "pointer_list.h"
 
-Entity *selectionGetSelectedEntity();
-
+bool selectionEntitiesSelected();
+void selectionGetSelectedEntities(PList *selected);
 void registerSelectionSystem();
 
 #endif // SELECTION_SYSTEM_H
