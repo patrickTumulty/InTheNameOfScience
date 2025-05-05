@@ -7,7 +7,12 @@
 #include "tmem.h"
 #include <math.h>
 #include <stdint.h>
-#include <stdio.h>
+
+typedef struct
+{
+    i8 x;
+    i8 y;
+} Point2D;
 
 typedef struct
 {
@@ -19,9 +24,10 @@ typedef struct
     LNode lnode;
 } AStarCell;
 
+
 typedef struct
 {
-    Position pos;
+    Point2D pos;
     uint32_t cost;
 } AStarMove;
 

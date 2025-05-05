@@ -9,7 +9,6 @@
 
 void prayEngineRun()
 {
-
     praySystemsRunStart();
 
     while (!WindowShouldClose())
@@ -46,7 +45,7 @@ void prayEngineInitialize()
 
     SetWindowState(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
     SetWindowMinSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-    SetExitKey(KEY_NULL);
+    // SetExitKey(KEY_NULL);
 
     SetTargetFPS(60);
 }

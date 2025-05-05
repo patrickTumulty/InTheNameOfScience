@@ -4,9 +4,8 @@
 #include "pray_globals.h"
 #include "pray_system.h"
 #include <raylib.h>
-#include <stdio.h>
 
-static float cameraSpeed = 200.0f;
+static float cameraSpeed = 400.0f;
 static Vector2 cameraTarget;
 
 
@@ -46,9 +45,9 @@ void gameUpdate()
     {
         const float zoomIncrement = 0.125f;
         camera->zoom += (wheel * zoomIncrement);
-        if (camera->zoom < 1.0f)
+        if (camera->zoom < 0.1f)
         {
-            camera->zoom = 1.0f;
+            camera->zoom = 0.1f;
         }
 
         if (camera->zoom > 8.0f)
