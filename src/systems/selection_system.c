@@ -8,6 +8,7 @@
 #include "pray_entity.h"
 #include "pray_entity_registry.h"
 #include "pray_system.h"
+#include "pray_utils.h"
 #include "raylib.h"
 #include <math.h>
 #include <stdio.h>
@@ -133,7 +134,8 @@ static void checkForMultiSelection()
         TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
         SelectableComponent *selectable = prayEntityGetComponent(entity, CID_SELECTABLE);
 
-        if (CheckCollisionCircleRec(transform->position, collider2D->radius, selectionRectangle))
+        Vector2 position = prayVector2Add(transform->position, collider2D->offset);
+        if (CheckCollisionCircleRec(position, collider2D->radius, selectionRectangle))
         {
             selectable->selected = true;
             addSelectedEntity(entity);

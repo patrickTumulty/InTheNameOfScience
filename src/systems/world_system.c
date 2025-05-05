@@ -7,6 +7,7 @@
 #include "pray_entity_registry.h"
 #include "pray_globals.h"
 #include "pray_system.h"
+#include "raylib.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <threads.h>
@@ -55,11 +56,11 @@ static void renderWorld()
             {
                 if (i % 2 == 0)
                 {
-                    color = (j % 2 == 0) ? MATERIAL_BLUE_GREY_100 : MATERIAL_BLUE_GREY_200;
+                    color = (j % 2 == 0) ? MATERIAL_BLUE_GREY_700 : MATERIAL_BLUE_GREY_800;
                 }
                 else
                 {
-                    color = (j % 2 == 0) ? MATERIAL_BLUE_GREY_200 : MATERIAL_BLUE_GREY_100;
+                    color = (j % 2 == 0) ? MATERIAL_BLUE_GREY_800 : MATERIAL_BLUE_GREY_700;
                 }
             }
             DrawRectangle(j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
@@ -71,7 +72,7 @@ static void renderWorld()
     rect.width = TILE_SIZE * worldComponent->cols;
     rect.x = 0;
     rect.y = 0;
-    DrawRectangleLinesEx(rect, 3.0f, MATERIAL_BLUE_GREY_700);
+    DrawRectangleLinesEx(rect, 10.0f, WHITE);
 }
 
 void registerWorldSystem()

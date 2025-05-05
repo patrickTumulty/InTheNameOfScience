@@ -5,7 +5,7 @@
 constexpr static int WORLD_HEIGHT = 50;
 constexpr static int WORLD_WIDTH = 50;
 
-constexpr static int TILE_SIZE = 30;
+constexpr static int TILE_SIZE = 256;
 
 const static int SCREEN_WIDTH = 1500;
 const static int SCREEN_HEIGHT = 1500;

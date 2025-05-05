@@ -17,7 +17,7 @@ void prayEngineRun()
 
         BeginDrawing();
 
-        ClearBackground(RAYWHITE);
+        ClearBackground(DARKGRAY);
 
         BeginMode2D(*prayGetCamera());
 

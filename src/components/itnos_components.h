@@ -53,6 +53,7 @@ typedef struct
 {
     Collider2DType type;
     float radius;
+    Vector2 offset;
 } Collider2DComponent;
 
 typedef enum : u32

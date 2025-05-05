@@ -17,6 +17,7 @@
 #include "raylib.h"
 #include "selection_system.h"
 #include "tmem.h"
+#include <stdatomic.h>
 #include <stdio.h>
 #include <threads.h>
 
@@ -25,8 +26,8 @@ static Texture2D textureRed;
 static Shader outlineShader;
 
 
-#define TEXTURE_ARROW_RED "assets/arrow-red2.png"
-#define TEXTURE_ARROW_BLUE "assets/arrow-blue2.png"
+#define TEXTURE_ARROW_RED "assets/red-arrow3.png"
+#define TEXTURE_ARROW_BLUE "assets/blue-arrow3.png"
 #define POS2VEC(POS) \
     (Vector2) { .x = (POS).x, .y = (POS).y }
 #define VEC2POS(VEC) \
@@ -45,8 +46,8 @@ static void clearPath(AStarPath *path)
 
 static void setOutlineShaderProperties(Shader *shader, Texture texture, bool enabled)
 {
-    float outlineSize = enabled ? 1.0f : 0.0f;
-    float outlineColor[4] = {1.0f, 0.0f, 0.0f, 1.0f}; // Normalized RED color
+    float outlineSize = enabled ? 6.0f : 0.0f;
+    float outlineColor[4] = {1.0f, 1.0f, 1.0f, 1.0f}; // Normalized WHITE color
     float textureSize[2] = {(float) texture.width, (float) texture.height};
 
     // Get shader locations
@@ -123,7 +124,8 @@ static void createEntity(float x, float y, Texture2D texture, Shader *shader)
 
     Collider2DComponent *collider2D = prayEntityGetComponent(unitEntity, CID_COLLIDER_2D);
     collider2D->type = COLLIDER_2D_TRIANGLE;
-    collider2D->radius = 30;
+    collider2D->radius = 80;
+    collider2D->offset = (Vector2) {.x = -20, .y = 0};
 
     prayEntityRegister(unitEntity);
 }
@@ -248,8 +250,8 @@ static void renderUpdate()
         Color green = GREEN;
         green.a = 120;
 
-        DrawCircle((int) transform->position.x,
-                   (int) transform->position.y,
+        DrawCircle((int) transform->position.x + collider2D->offset.x,
+                   (int) transform->position.y + collider2D->offset.y,
                    collider2D->radius,
                    green);
     }
