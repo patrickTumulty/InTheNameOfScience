@@ -50,14 +50,6 @@ typedef struct
 
 typedef struct
 {
-    u32 rows;
-    u32 cols;
-    BoolMat *navGrid;
-    char **world;
-} WorldComponent;
-
-typedef struct
-{
     Vector2 position;
     float rotation; // 0.0 to 359.0
 } TransformComponent;
@@ -92,9 +84,11 @@ typedef enum : u32
     CID_ENEMY,
 } ComponentID;
 
-
 #define C(...) \
     (ComponentID[]) { __VA_ARGS__ }
+
+
+char *componentID2Str(ComponentID id);
 
 void registerComponents();
 

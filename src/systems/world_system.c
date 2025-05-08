@@ -5,20 +5,19 @@
 #include "pray_colors.h"
 #include "pray_entity.h"
 #include "pray_entity_registry.h"
-#include "pray_globals.h"
 #include "pray_system.h"
 #include "raylib.h"
+#include "world_component.h"
 #include <pthread.h>
-#include <stdio.h>
 #include <threads.h>
 
 static Entity *worldEntity;
-static World *worldComponent;
+static WorldComponent *world;
 
 static void start()
 {
     worldEntity = prayEntityNew(C(CID_WORLD), 1);
-    worldComponent = prayEntityGetComponent(worldEntity, CID_WORLD);
+    world = prayEntityGetComponent(worldEntity, CID_WORLD);
     prayEntityRegister(worldEntity);
 }
 
@@ -30,25 +29,25 @@ static void stop()
 
 static void renderWorld()
 {
-    for (int i = 0; i < worldComponent->rows; i++)
+    for (int i = 0; i < world->rows; i++)
     {
-        for (int j = 0; j < worldComponent->cols; j++)
+        for (int j = 0; j < world->cols; j++)
         {
             Color color;
 
-            if (boolMatGet(worldComponent->navGrid, j, i) == 0)
+            if (boolMatGet(world->navGrid, j, i) == 0)
             {
                 color = BLACK;
             }
-            else if (worldComponent->world[i][j] == '1')
+            else if (world->world[i][j] == '1')
             {
                 color = RED;
             }
-            else if (worldComponent->world[i][j] == '2')
+            else if (world->world[i][j] == '2')
             {
                 color = GREEN;
             }
-            else if (worldComponent->world[i][j] == '3')
+            else if (world->world[i][j] == '3')
             {
                 color = BLUE;
             }
@@ -63,13 +62,17 @@ static void renderWorld()
                     color = (j % 2 == 0) ? MATERIAL_BLUE_GREY_800 : MATERIAL_BLUE_GREY_700;
                 }
             }
-            DrawRectangle(j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
+            DrawRectangle(j * world->tileSize, 
+                          i * world->tileSize, 
+                          world->tileSize, 
+                          world->tileSize, 
+                          color);
         }
     }
 
     Rectangle rect;
-    rect.height = TILE_SIZE * worldComponent->rows;
-    rect.width = TILE_SIZE * worldComponent->cols;
+    rect.height = world->tileSize * (float) world->rows;
+    rect.width = world->tileSize * (float) world->cols;
     rect.x = 0;
     rect.y = 0;
     DrawRectangleLinesEx(rect, 10.0f, WHITE);

@@ -19,6 +19,7 @@
 #include "raylib.h"
 #include "selection_system.h"
 #include "tmem.h"
+#include "world_component.h"
 #include <stdatomic.h>
 #include <stdio.h>
 #include <threads.h>
@@ -27,9 +28,11 @@ static Texture2D textureBlue;
 static Texture2D textureRed;
 static Shader outlineShader;
 
+static WorldComponent *world;
 
 #define TEXTURE_ARROW_RED "assets/red-arrow3.png"
 #define TEXTURE_ARROW_BLUE "assets/blue-arrow3.png"
+
 #define POS2VEC(POS) \
     (Vector2) { .x = (POS).x, .y = (POS).y }
 #define VEC2POS(VEC) \
@@ -50,13 +53,6 @@ static void setOutlineShaderProperties(Shader *shader, Texture texture, bool ena
     SetShaderValue(*shader, outlineSizeLoc, &outlineSize, SHADER_UNIFORM_FLOAT);
     SetShaderValue(*shader, outlineColorLoc, outlineColor, SHADER_UNIFORM_VEC4);
     SetShaderValue(*shader, textureSizeLoc, textureSize, SHADER_UNIFORM_VEC2);
-}
-
-bool isInCircle(Vector2 circleCenter, Vector2 p, float radius)
-{
-    float deltaX = p.x - circleCenter.x;
-    float deltaY = p.y - circleCenter.y;
-    return ((deltaX * deltaX) + (deltaY * deltaY)) < (radius * radius);
 }
 
 void calculateTriangle(Vector2 center, float roatationDegrees, float radius, Vector2 points[3])
@@ -98,8 +94,8 @@ static void createEntity(float x, float y, Texture2D texture, Shader *shader)
     Entity *unitEntity = prayEntityNew(cids, cidsLen);
     TransformComponent *transform = prayEntityGetComponent(unitEntity, CID_TRANSFORM);
 
-    transform->position.x = x * TILE_SIZE;
-    transform->position.y = y * TILE_SIZE;
+    transform->position.x = x * world->tileSize;
+    transform->position.y = y * world->tileSize;
 
     float textureWidth = (float) texture.width;
     float textureHeight = (float) texture.height;
@@ -125,8 +121,8 @@ static void createTargetEntity()
 {
     Entity *entity = prayEntityNew(C(CID_HEALTH, CID_TRANSFORM, CID_COLLIDER_2D), 3);
     TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
-    transform->position.x = 20 * TILE_SIZE;
-    transform->position.y = 20 * TILE_SIZE;
+    transform->position.x = 20 * world->tileSize;
+    transform->position.y = 20 * world->tileSize;
 
     Collider2DComponent *collider = prayEntityGetComponent(entity, CID_COLLIDER_2D);
     collider->radius = 100;
@@ -136,6 +132,9 @@ static void createTargetEntity()
 
 static void start()
 {
+    Entity *worldEntity = prayEntityLookup(C(CID_WORLD), 1);
+    world = prayEntityGetComponent(worldEntity, CID_WORLD);
+
     textureBlue = LoadTexture(TEXTURE_ARROW_BLUE);
     textureRed = LoadTexture(TEXTURE_ARROW_RED);
     outlineShader = LoadShader(nullptr, TextFormat("shaders/glsl330/outline.fs", 330));
@@ -151,35 +150,11 @@ static void start()
     createTargetEntity();
 }
 
-
 static void stop()
 {
     UnloadTexture(textureBlue);
     UnloadTexture(textureRed);
     UnloadShader(outlineShader);
-}
-
-static void moveUnitAlongPath(TransformComponent *transform, PathfindComponent *pathfind)
-{
-    if (pathfind->active == false)
-    {
-        return;
-    }
-
-    Vector2 *position = &transform->position;
-
-    *position = prayVector2MoveTowards(*position, pathfind->currentPoint, pathfind->speed * GetFrameTime());
-
-    if (isInCircle(pathfind->currentPoint, *position, 1))
-    {
-        pathfindNextPoint(pathfind);
-        if (pathfind->active)
-        {
-            Vector2 navPoint = pathfind->currentPoint;
-            float angle = calculateAngle(navPoint, *position);
-            transform->rotation = angle;
-        }
-    }
 }
 
 static void setPathForSelectedUnits(WorldComponent *world, Vector2 position)
@@ -200,13 +175,13 @@ static void setPathForSelectedUnits(WorldComponent *world, Vector2 position)
         PathfindComponent *pathfind = prayEntityGetComponent(entity, CID_PATHFINDING);
 
         Position start = (Position) {
-            .x = (int) transform->position.x / TILE_SIZE,
-            .y = (int) transform->position.y / TILE_SIZE,
+            .x = (int) transform->position.x / world->tileSize,
+            .y = (int) transform->position.y / world->tileSize,
         };
 
         Position dest = (Position) {
-            .x = (int) position.x / TILE_SIZE,
-            .y = (int) position.y / TILE_SIZE,
+            .x = (int) position.x / world->tileSize,
+            .y = (int) position.y / world->tileSize,
         };
 
         pathfindClearPoints(pathfind);
@@ -221,13 +196,13 @@ static void setPathForSelectedUnits(WorldComponent *world, Vector2 position)
             continue;
         }
 
-        float half = TILE_SIZE / 2;
+        float half = world->tileSize / 2;
         for (int i = 0; i < path.pathLen; i++)
         {
             Position p = path.path[i];
             Vector2 navPoint = {
-                .x = (float) (p.x * TILE_SIZE) + half,
-                .y = (float) (p.y * TILE_SIZE) + half,
+                .x = (float) (p.x * world->tileSize) + half,
+                .y = (float) (p.y * world->tileSize) + half,
             };
             pathfindAddPoint(pathfind, navPoint);
             world->world[p.y][p.x] = '3';
@@ -277,9 +252,6 @@ static void clearAStarPath(WorldComponent *world)
 
 static void gameUpdate()
 {
-    Entity *worldEntity = prayEntityLookup(C(CID_WORLD), 1);
-    WorldComponent *world = prayEntityGetComponent(worldEntity, CID_WORLD);
-
     int rows = (int) world->rows;
     int cols = (int) world->cols;
 
@@ -288,42 +260,12 @@ static void gameUpdate()
         clearAStarPath(world);
 
         Vector2 position = GetScreenToWorld2D(GetMousePosition(), *prayGetCamera());
-        int row = (int) position.y / TILE_SIZE;
-        int col = (int) position.x / TILE_SIZE;
+        int row = (int) position.y / world->tileSize;
+        int col = (int) position.x / world->tileSize;
 
         if (inBounds(row, 0, rows) && inBounds(col, 0, cols))
         {
             setPathForSelectedUnits(world, position);
-        }
-    }
-
-    LList units;
-    Rc rc = prayEntityLookupAll(&units, C(CID_UNIT, CID_TRANSFORM, CID_PATHFINDING, CID_COLLIDER_2D, CID_SPRITE_2D), 3);
-    if (rc != RC_OK)
-    {
-        return;
-    }
-
-    LNode *node = nullptr;
-    LListForEach(&units, node)
-    {
-        Entity *entity = LListGetEntry(node, Entity);
-        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
-        PathfindComponent *pathfind = prayEntityGetComponent(entity, CID_PATHFINDING);
-        UnitComponent *unit = prayEntityGetComponent(entity, CID_UNIT);
-
-        if (pathfind->active)
-        {
-            moveUnitAlongPath(transform, pathfind);
-        }
-        else
-        {
-            if (unit->roam.t > GetTime())
-            {
-                float rotation = randomFloat(0, 2 * PI);
-                float radius = randomFloat(50, 500);
-                Vector2 newPosition = calculatePointOnCircle(transform->position, rotation, radius);
-            }
         }
     }
 }
