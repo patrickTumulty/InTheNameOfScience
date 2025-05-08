@@ -31,6 +31,10 @@ Rc alistNew(AList *alist, u32 length, u32 size)
 
 Rc alistResize(AList *alist, u32 length)
 {
+    if (length == 0)
+    {
+        return alistClear(alist);
+    }
     u64 newSize = (u64) length * alist->elementSize;
     uint8_t *newBuffer = tmemcalloc(1, newSize);
     if (newBuffer == nullptr)
@@ -119,4 +123,16 @@ void alistFree(AList *alist)
     alist->dataSize = 0;
     alist->elementSize = 0;
     alist->length = 0;
+}
+
+Rc alistClear(AList *alist)
+{
+    if (alist->data != nullptr)
+    {
+        tmemfree(alist->data);
+        alist->data = nullptr;
+    }
+    alist->dataSize = 0;
+    alist->length = 0;
+    return RC_OK;
 }

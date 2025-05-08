@@ -28,7 +28,7 @@ float calculateAngle(Vector2 p1, Vector2 p2)
  *
  * @return point on circle 
  */
-Vector2 calculateRotation(Vector2 origin, float radians, float radius)
+Vector2 calculatePointOnCircle(Vector2 origin, float radians, float radius)
 {
     float x = radius * cosf(radians);
     float y = radius * sinf(radians);

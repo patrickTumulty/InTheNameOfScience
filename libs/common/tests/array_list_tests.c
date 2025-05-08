@@ -6,7 +6,6 @@
 #include "tmem.h"
 #include <CUnit/Basic.h>
 #include <CUnit/CUnit.h>
-#include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 
@@ -196,6 +195,15 @@ void alistResizeTest(void)
     {
         Rc rc = alistSet(&alist, i + 5, &elements[i]);
         CU_ASSERT_EQUAL(rc, RC_OK);
+    }
+
+
+    alistResize(&alist, 0);
+
+    for (int i = 0; i < 5; i++)
+    {
+        ArrayElement *element = alistGet(&alist, i);
+        CU_ASSERT_PTR_NULL(element);
     }
 
     alistFree(&alist);

@@ -13,6 +13,7 @@ set(
     src/pointer_list.c
     src/tmem.c
     src/array_list.c
+    src/common_random.c
 )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})

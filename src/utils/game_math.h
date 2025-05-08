@@ -5,7 +5,7 @@
 #include "raylib.h"
 
 float calculateAngle(Vector2 p1, Vector2 p2);
-Vector2 calculateRotation(Vector2 origin, float radians, float radius);
+Vector2 calculatePointOnCircle(Vector2 origin, float radians, float radius);
 
 float calculateSlope(Vector2 p1, Vector2 p2);
 

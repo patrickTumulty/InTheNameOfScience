@@ -5,7 +5,7 @@
 #include "pray_system.h"
 #include <raylib.h>
 
-static float cameraSpeed = 400.0f;
+static float cameraSpeed = 1600.0f;
 static Vector2 cameraTarget;
 
 

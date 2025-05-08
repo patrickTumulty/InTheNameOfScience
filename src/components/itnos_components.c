@@ -2,6 +2,9 @@
 #include "itnos_components.h"
 
 #include "bool_mat.h"
+#include "common_utils.h"
+#include "linked_list.h"
+#include "pathfind_component.h"
 #include "pray_component.h"
 #include "pray_globals.h"
 #include "raylib.h"
@@ -10,6 +13,14 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <threads.h>
+
+static void initHealth(void *component)
+{
+    HealthComponent *healthComponent = component;
+    healthComponent->maxHealth = 100;
+    healthComponent->currentHealth = 100;
+}
+
 
 
 static void initWorldComponent(void *component)
@@ -41,34 +52,17 @@ static void deinitWorldComponent(void *component)
     boolMatFree(worldComponent->navGrid);
 }
 
-static void initPathComponent(void *component)
-{
-    PathfindComponent *pathfindComponent = (PathfindComponent *) component;
-
-    pathfindComponent->path.path = nullptr;
-    pathfindComponent->path.pathLen = 0;
-    pathfindComponent->pathSet = false;
-    pathfindComponent->index = 0;
-    pathfindComponent->speed = 1200;
-}
-
-static void freePathComponent(void *component)
-{
-    PathfindComponent *pathfindComponent = (PathfindComponent *) component;
-    if (pathfindComponent->path.path != nullptr)
-    {
-        tmemfree(pathfindComponent->path.path);
-        pathfindComponent->path.path = nullptr;
-    }
-}
 
 void registerComponents()
 {
     prayComponentRegister(CID_WORLD, sizeof(WorldComponent), initWorldComponent, deinitWorldComponent);
     prayComponentRegister(CID_TRANSFORM, sizeof(TransformComponent), nullptr, nullptr);
     prayComponentRegister(CID_UNIT, 0, nullptr, nullptr);
-    prayComponentRegister(CID_PATHFINDING, sizeof(PathfindComponent), initPathComponent, freePathComponent);
+    prayComponentRegister(CID_PATHFINDING, sizeof(PathfindComponent), initPathfindComponent, freePathfindComponent);
     prayComponentRegister(CID_SPRITE_2D, sizeof(Sprite2DComponent), nullptr, nullptr);
     prayComponentRegister(CID_COLLIDER_2D, sizeof(Collider2DComponent), nullptr, nullptr);
     prayComponentRegister(CID_SELECTABLE, sizeof(SelectableComponent), nullptr, nullptr);
+    prayComponentRegister(CID_HEALTH, sizeof(HealthComponent), initHealth, nullptr);
+    prayComponentRegister(CID_DAMAGE, sizeof(DamageComponent), nullptr, nullptr);
+    prayComponentRegister(CID_ENEMY, 0, nullptr, nullptr);
 }

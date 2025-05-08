@@ -12,6 +12,27 @@ struct Sprite2DComponent;
 
 typedef void (*PreShaderCallback)(Entity *entity, struct Sprite2DComponent *sprite2D);
 
+typedef struct {
+    bool roaming;
+    float t;
+} Roam;
+
+typedef struct
+{
+    Roam roam;
+} UnitComponent;
+
+typedef struct
+{
+    int maxHealth;
+    int currentHealth;
+} HealthComponent;
+
+typedef struct
+{
+    int damage;
+} DamageComponent;
+
 typedef struct Sprite2DComponent
 {
     Texture2D texture;
@@ -65,16 +86,12 @@ typedef enum : u32
     CID_PATHFINDING,
     CID_SPRITE_2D,
     CID_COLLIDER_2D,
-    CID_SELECTABLE
+    CID_SELECTABLE,
+    CID_HEALTH,
+    CID_DAMAGE,
+    CID_ENEMY,
 } ComponentID;
 
-typedef struct
-{
-    AStarPath path;
-    int index;
-    float speed;
-    bool pathSet;
-} PathfindComponent;
 
 #define C(...) \
     (ComponentID[]) { __VA_ARGS__ }

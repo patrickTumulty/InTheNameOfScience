@@ -1,12 +1,14 @@
 
 #include "unit_system.h"
 #include "astar.h"
+#include "common_random.h"
 #include "common_types.h"
 #include "common_utils.h"
 #include "float.h"
 #include "game_math.h"
 #include "itnos_components.h"
 #include "linked_list.h"
+#include "pathfind_component.h"
 #include "pointer_list.h"
 #include "pray_camera.h"
 #include "pray_entity.h"
@@ -33,17 +35,6 @@ static Shader outlineShader;
 #define VEC2POS(VEC) \
     (Position) { .x = (VEC).x, .y = (VEC).y }
 
-static void clearPath(AStarPath *path)
-{
-    if (path->path != nullptr)
-    {
-        tmemfree(path->path);
-        path->path = nullptr;
-        path->pathLen = 0;
-    }
-}
-
-
 static void setOutlineShaderProperties(Shader *shader, Texture texture, bool enabled)
 {
     float outlineSize = enabled ? 6.0f : 0.0f;
@@ -68,11 +59,11 @@ bool isInCircle(Vector2 circleCenter, Vector2 p, float radius)
     return ((deltaX * deltaX) + (deltaY * deltaY)) < (radius * radius);
 }
 
-void calculateTrangle(Vector2 center, float roatationDegrees, float radius, Vector2 points[3])
+void calculateTriangle(Vector2 center, float roatationDegrees, float radius, Vector2 points[3])
 {
-    points[0] = calculateRotation(center, DEG2RAD * roatationDegrees, radius);
-    points[1] = calculateRotation(center, DEG2RAD * (120 + roatationDegrees), radius);
-    points[2] = calculateRotation(center, DEG2RAD * (240 + roatationDegrees), radius);
+    points[0] = calculatePointOnCircle(center, DEG2RAD * roatationDegrees, radius);
+    points[1] = calculatePointOnCircle(center, DEG2RAD * (120 + roatationDegrees), radius);
+    points[2] = calculatePointOnCircle(center, DEG2RAD * (240 + roatationDegrees), radius);
 }
 
 static void configureShader(Entity *entity, struct Sprite2DComponent *sprite2D)
@@ -130,6 +121,19 @@ static void createEntity(float x, float y, Texture2D texture, Shader *shader)
     prayEntityRegister(unitEntity);
 }
 
+static void createTargetEntity()
+{
+    Entity *entity = prayEntityNew(C(CID_HEALTH, CID_TRANSFORM, CID_COLLIDER_2D), 3);
+    TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
+    transform->position.x = 20 * TILE_SIZE;
+    transform->position.y = 20 * TILE_SIZE;
+
+    Collider2DComponent *collider = prayEntityGetComponent(entity, CID_COLLIDER_2D);
+    collider->radius = 100;
+
+    prayEntityRegister(entity);
+}
+
 static void start()
 {
     textureBlue = LoadTexture(TEXTURE_ARROW_BLUE);
@@ -140,8 +144,13 @@ static void start()
     setOutlineShaderProperties(&outlineShader, textureRed, false);
 
     createEntity(2, 2, textureBlue, &outlineShader);
-    createEntity(10, 10, textureRed, &outlineShader);
+    createEntity(2, 4, textureBlue, &outlineShader);
+    createEntity(2, 6, textureBlue, &outlineShader);
+    createEntity(2, 8, textureBlue, &outlineShader);
+
+    createTargetEntity();
 }
+
 
 static void stop()
 {
@@ -152,44 +161,28 @@ static void stop()
 
 static void moveUnitAlongPath(TransformComponent *transform, PathfindComponent *pathfind)
 {
-    if (pathfind->pathSet == false)
+    if (pathfind->active == false)
     {
         return;
     }
 
-    float half = TILE_SIZE / 2;
-
     Vector2 *position = &transform->position;
-    Position temp = pathfind->path.path[pathfind->index];
-    Vector2 pathPoint = {
-        .x = (float) (temp.x * TILE_SIZE) + half,
-        .y = (float) (temp.y * TILE_SIZE) + half,
-    };
 
-    *position = prayVector2MoveTowards(*position, pathPoint, pathfind->speed * GetFrameTime());
+    *position = prayVector2MoveTowards(*position, pathfind->currentPoint, pathfind->speed * GetFrameTime());
 
-    if (isInCircle(pathPoint, *position, 1))
+    if (isInCircle(pathfind->currentPoint, *position, 1))
     {
-        pathfind->index++;
-        if (pathfind->index == pathfind->path.pathLen)
+        pathfindNextPoint(pathfind);
+        if (pathfind->active)
         {
-            clearPath(&pathfind->path);
-            pathfind->pathSet = false;
-        }
-        else
-        {
-            temp = pathfind->path.path[pathfind->index];
-            pathPoint = (Vector2) {
-                .x = (float) (temp.x * TILE_SIZE) + half,
-                .y = (float) (temp.y * TILE_SIZE) + half,
-            };
-            float angle = calculateAngle(pathPoint, *position);
+            Vector2 navPoint = pathfind->currentPoint;
+            float angle = calculateAngle(navPoint, *position);
             transform->rotation = angle;
         }
     }
 }
 
-static void setPathForPathfindingUnits(WorldComponent *world, Vector2 position)
+static void setPathForSelectedUnits(WorldComponent *world, Vector2 position)
 {
     if (!selectionEntitiesSelected())
     {
@@ -216,22 +209,33 @@ static void setPathForPathfindingUnits(WorldComponent *world, Vector2 position)
             .y = (int) position.y / TILE_SIZE,
         };
 
-        clearPath(&pathfind->path);
-        pathfind->index = 0;
-        pathfind->pathSet = false;
+        pathfindClearPoints(pathfind);
 
-        astar(start, dest, world->navGrid, &pathfind->path);
+        AStarPath path;
 
-        if (pathfind->path.path != nullptr && pathfind->path.pathLen > 0)
+        astar(start, dest, world->navGrid, &path);
+
+        if (path.pathLen <= 0)
         {
-            pathfind->pathSet = true;
-
-            for (int i = 0; i < pathfind->path.pathLen; i++)
-            {
-                Position p = pathfind->path.path[i];
-                world->world[p.y][p.x] = '3';
-            }
+            tmemfree(path.path);
+            continue;
         }
+
+        float half = TILE_SIZE / 2;
+        for (int i = 0; i < path.pathLen; i++)
+        {
+            Position p = path.path[i];
+            Vector2 navPoint = {
+                .x = (float) (p.x * TILE_SIZE) + half,
+                .y = (float) (p.y * TILE_SIZE) + half,
+            };
+            pathfindAddPoint(pathfind, navPoint);
+            world->world[p.y][p.x] = '3';
+        }
+
+        pathfindAddPoint(pathfind, position);
+
+        tmemfree(path.path);
     }
 }
 
@@ -279,6 +283,20 @@ static void gameUpdate()
     int rows = (int) world->rows;
     int cols = (int) world->cols;
 
+    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+    {
+        clearAStarPath(world);
+
+        Vector2 position = GetScreenToWorld2D(GetMousePosition(), *prayGetCamera());
+        int row = (int) position.y / TILE_SIZE;
+        int col = (int) position.x / TILE_SIZE;
+
+        if (inBounds(row, 0, rows) && inBounds(col, 0, cols))
+        {
+            setPathForSelectedUnits(world, position);
+        }
+    }
+
     LList units;
     Rc rc = prayEntityLookupAll(&units, C(CID_UNIT, CID_TRANSFORM, CID_PATHFINDING, CID_COLLIDER_2D, CID_SPRITE_2D), 3);
     if (rc != RC_OK)
@@ -292,21 +310,20 @@ static void gameUpdate()
         Entity *entity = LListGetEntry(node, Entity);
         TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
         PathfindComponent *pathfind = prayEntityGetComponent(entity, CID_PATHFINDING);
+        UnitComponent *unit = prayEntityGetComponent(entity, CID_UNIT);
 
-        moveUnitAlongPath(transform, pathfind);
-    }
-
-    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
-    {
-        clearAStarPath(world);
-
-        Vector2 position = GetScreenToWorld2D(GetMousePosition(), *prayGetCamera());
-        int row = (int) position.y / TILE_SIZE;
-        int col = (int) position.x / TILE_SIZE;
-
-        if (inBounds(row, 0, rows) && inBounds(col, 0, cols))
+        if (pathfind->active)
         {
-            setPathForPathfindingUnits(world, position);
+            moveUnitAlongPath(transform, pathfind);
+        }
+        else
+        {
+            if (unit->roam.t > GetTime())
+            {
+                float rotation = randomFloat(0, 2 * PI);
+                float radius = randomFloat(50, 500);
+                Vector2 newPosition = calculatePointOnCircle(transform->position, rotation, radius);
+            }
         }
     }
 }
@@ -318,7 +335,7 @@ void registerUnitSystem()
         .start = start,
         .stop = stop,
         .gameUpdate = gameUpdate,
-        // .renderUpdateWorldSpace = renderUpdate,
+        .renderUpdateWorldSpace = renderUpdate,
     };
 
     praySystemsRegister(system);
