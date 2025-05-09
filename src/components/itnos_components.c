@@ -3,6 +3,7 @@
 
 #include "pathfind_component.h"
 #include "pray_component.h"
+#include "projectile_component.h"
 #include "world_component.h"
 #include <pthread.h>
 #include <stddef.h>
@@ -26,8 +27,9 @@ void registerComponents()
     prayComponentRegister(CID_COLLIDER_2D, sizeof(Collider2DComponent), nullptr, nullptr);
     prayComponentRegister(CID_SELECTABLE, sizeof(SelectableComponent), nullptr, nullptr);
     prayComponentRegister(CID_HEALTH, sizeof(HealthComponent), initHealth, nullptr);
-    prayComponentRegister(CID_DAMAGE, sizeof(DamageComponent), nullptr, nullptr);
+    prayComponentRegister(CID_TARGETING, sizeof(TargetingComponent), nullptr, nullptr);
     prayComponentRegister(CID_ENEMY, 0, nullptr, nullptr);
+    prayComponentRegister(CID_PROJECTILE, sizeof(ProjectileComponent), nullptr, nullptr);
 }
 
 
@@ -44,7 +46,7 @@ char *componentID2Str(ComponentID id)
         case CID_COLLIDER_2D: return "COLLIDER_2D";
         case CID_SELECTABLE: return "SELECTABLE";
         case CID_HEALTH: return "HEALTH";
-        case CID_DAMAGE: return "DAMAGE";
+        case CID_TARGETING: return "DAMAGE";
         case CID_ENEMY: return "ENEMY";
         default: return "UNKONWN";
     }

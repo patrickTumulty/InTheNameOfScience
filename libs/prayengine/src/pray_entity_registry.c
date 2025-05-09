@@ -134,6 +134,8 @@ Rc prayEntityLookupAll(LList *llist, const u32 *componentIDs, u32 componentIDsCo
 
         if (matches == componentIDsCount)
         {
+            entity->lnode.next = nullptr;
+            entity->lnode.prev = nullptr;
             llistAppend(llist, &entity->lnode);
         }
     }

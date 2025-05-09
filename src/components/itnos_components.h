@@ -30,8 +30,9 @@ typedef struct
 
 typedef struct
 {
+    Entity *target;
     int damage;
-} DamageComponent;
+} TargetingComponent;
 
 typedef struct Sprite2DComponent
 {
@@ -80,8 +81,9 @@ typedef enum : u32
     CID_COLLIDER_2D,
     CID_SELECTABLE,
     CID_HEALTH,
-    CID_DAMAGE,
+    CID_TARGETING,
     CID_ENEMY,
+    CID_PROJECTILE,
 } ComponentID;
 
 #define C(...) \

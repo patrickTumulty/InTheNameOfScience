@@ -1,0 +1,5 @@
+
+#ifndef HEALTH_COMPONENT_H
+#define HEALTH_COMPONENT_H
+
+#endif // HEALTH_COMPONENT_H

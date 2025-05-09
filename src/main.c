@@ -2,6 +2,7 @@
 #include "camera_system.h"
 #include "itnos_components.h"
 #include "pray_engine.h"
+#include "projectile_system.h"
 #include "selection_system.h"
 #include "sprite2d_system.h"
 #include "path_system.h"
@@ -32,6 +33,7 @@ int main(void)
     registerPathSystem();
     registerCameraSystem();
     registerSprite2DSystem();
+    registerProjectileSystem();
     registerUnitSystem();
     registerSelectionSystem();
 

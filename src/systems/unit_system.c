@@ -1,7 +1,6 @@
 
 #include "unit_system.h"
 #include "astar.h"
-#include "common_random.h"
 #include "common_types.h"
 #include "common_utils.h"
 #include "float.h"
@@ -13,20 +12,20 @@
 #include "pray_camera.h"
 #include "pray_entity.h"
 #include "pray_entity_registry.h"
-#include "pray_globals.h"
 #include "pray_system.h"
-#include "pray_utils.h"
+#include "projectile_system.h"
 #include "raylib.h"
 #include "selection_system.h"
 #include "tmem.h"
 #include "world_component.h"
 #include <stdatomic.h>
-#include <stdio.h>
 #include <threads.h>
 
 static Texture2D textureBlue;
 static Texture2D textureRed;
 static Shader outlineShader;
+
+#define VISION_CIRCLE 1000
 
 static WorldComponent *world;
 
@@ -83,6 +82,7 @@ static void createEntity(float x, float y, Texture2D texture, Shader *shader)
     ComponentID cids[] = {
         CID_UNIT,
         CID_TRANSFORM,
+        CID_TARGETING,
         CID_PATHFINDING,
         CID_SPRITE_2D,
         CID_COLLIDER_2D,
@@ -119,7 +119,7 @@ static void createEntity(float x, float y, Texture2D texture, Shader *shader)
 
 static void createTargetEntity()
 {
-    Entity *entity = prayEntityNew(C(CID_HEALTH, CID_TRANSFORM, CID_COLLIDER_2D), 3);
+    Entity *entity = prayEntityNew(C(CID_ENEMY, CID_HEALTH, CID_TRANSFORM, CID_COLLIDER_2D), 4);
     TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
     transform->position.x = 20 * world->tileSize;
     transform->position.y = 20 * world->tileSize;
@@ -142,12 +142,12 @@ static void start()
     setOutlineShaderProperties(&outlineShader, textureBlue, false);
     setOutlineShaderProperties(&outlineShader, textureRed, false);
 
-    createEntity(2, 2, textureBlue, &outlineShader);
-    createEntity(2, 4, textureBlue, &outlineShader);
-    createEntity(2, 6, textureBlue, &outlineShader);
-    createEntity(2, 8, textureBlue, &outlineShader);
+    // createTargetEntity();
 
-    createTargetEntity();
+    createEntity(2, 2, textureBlue, &outlineShader);
+    // createEntity(2, 4, textureBlue, &outlineShader);
+    // createEntity(2, 6, textureBlue, &outlineShader);
+    // createEntity(2, 8, textureBlue, &outlineShader);
 }
 
 static void stop()
@@ -175,13 +175,13 @@ static void setPathForSelectedUnits(WorldComponent *world, Vector2 position)
         PathfindComponent *pathfind = prayEntityGetComponent(entity, CID_PATHFINDING);
 
         Position start = (Position) {
-            .x = (int) transform->position.x / world->tileSize,
-            .y = (int) transform->position.y / world->tileSize,
+            .x = (int) (transform->position.x / world->tileSize),
+            .y = (int) (transform->position.y / world->tileSize),
         };
 
         Position dest = (Position) {
-            .x = (int) position.x / world->tileSize,
-            .y = (int) position.y / world->tileSize,
+            .x = (int) (position.x / world->tileSize),
+            .y = (int) (position.y / world->tileSize),
         };
 
         pathfindClearPoints(pathfind);
@@ -201,8 +201,8 @@ static void setPathForSelectedUnits(WorldComponent *world, Vector2 position)
         {
             Position p = path.path[i];
             Vector2 navPoint = {
-                .x = (float) (p.x * world->tileSize) + half,
-                .y = (float) (p.y * world->tileSize) + half,
+                .x = ((float) p.x * world->tileSize) + half,
+                .y = ((float) p.y * world->tileSize) + half,
             };
             pathfindAddPoint(pathfind, navPoint);
             world->world[p.y][p.x] = '3';
@@ -229,10 +229,21 @@ static void renderUpdate()
         Color green = GREEN;
         green.a = 120;
 
-        DrawCircle((int) transform->position.x + collider2D->offset.x,
-                   (int) transform->position.y + collider2D->offset.y,
+        DrawCircle((int) (transform->position.x + collider2D->offset.x),
+                   (int) (transform->position.y + collider2D->offset.y),
                    collider2D->radius,
                    green);
+    }
+
+    
+    rc = prayEntityLookupAll(&units, C(CID_TRANSFORM, CID_UNIT), 2);
+    node = nullptr;
+    LListForEach(&units, node)
+    {
+        Entity *entity = LListGetEntry(node, Entity);
+        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
+
+        DrawCircleLines((int) transform->position.x, (int) transform->position.y, VISION_CIRCLE, YELLOW);
     }
 }
 
@@ -260,14 +271,57 @@ static void gameUpdate()
         clearAStarPath(world);
 
         Vector2 position = GetScreenToWorld2D(GetMousePosition(), *prayGetCamera());
-        int row = (int) position.y / world->tileSize;
-        int col = (int) position.x / world->tileSize;
+        int row = (int) (position.y / world->tileSize);
+        int col = (int) (position.x / world->tileSize);
 
         if (inBounds(row, 0, rows) && inBounds(col, 0, cols))
         {
             setPathForSelectedUnits(world, position);
         }
     }
+
+    if (IsKeyPressed(KEY_P))
+    {
+        Entity *entity = prayEntityLookup(C(CID_UNIT), 1);
+        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
+        
+        projectileNew(transform->position, transform->rotation, 10);
+    }
+
+    // LList enemies;
+    // prayEntityLookupAll(&enemies, C(CID_ENEMY), 1);
+    // LNode *enemyNode = nullptr;
+    //
+    // LList units;
+    // prayEntityLookupAll(&units, C(CID_UNIT), 1);
+    // LNode *unitNode = nullptr;
+    //
+    // LListForEach(&units, unitNode)
+    // {
+    //     Entity *unitEntity = LListGetEntry(unitNode, Entity);
+    //     TransformComponent *unitTransform = prayEntityGetComponent(unitEntity, CID_TRANSFORM);
+    //     TargetingComponent *unitTargeting = prayEntityGetComponent(unitEntity, CID_TARGETING);
+    //     PathfindComponent *unitPathfind = prayEntityGetComponent(unitEntity, CID_PATHFINDING);
+    //     
+    //     if (unitTargeting->target != nullptr)
+    //     {
+    //         continue; // We already have a target
+    //     }
+    //
+    //     LListForEach(&enemies, enemyNode)
+    //     {
+    //         Entity *enemyEntity = LListGetEntry(enemyNode, Entity);
+    //         TransformComponent *enemyTransform = prayEntityGetComponent(enemyEntity, CID_TRANSFORM);
+    //         Collider2DComponent *enemyCollider = prayEntityGetComponent(enemyEntity, CID_COLLIDER_2D);
+    //
+    //         if (CheckCollisionCircles(unitTransform->position, VISION_CIRCLE, enemyTransform->position, enemyCollider->radius))
+    //         {
+    //             pathfindClearPoints(unitPathfind);
+    //             unitTransform->rotation = calculateAngle(enemyTransform->position, unitTransform->position);
+    //             break;
+    //         }
+    //     }
+    // }
 }
 
 void registerUnitSystem()
