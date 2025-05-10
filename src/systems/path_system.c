@@ -34,7 +34,7 @@ static void moveUnitAlongPath(TransformComponent *transform, PathfindComponent *
         {
             Vector2 navPoint = pathfind->currentPoint;
             float angle = calculateAngle(navPoint, *position);
-            transform->rotation = angle;
+            transform->rotationDegrees = angle;
         }
     }
 }
@@ -57,7 +57,7 @@ static void gameUpdate()
         Entity *entity = LListGetEntry(node, Entity);
         TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
         PathfindComponent *pathfind = prayEntityGetComponent(entity, CID_PATHFINDING);
-        UnitComponent *unit = prayEntityGetComponent(entity, CID_UNIT);
+        // UnitComponent *unit = prayEntityGetComponent(entity, CID_UNIT);
 
         if (pathfind->active)
         {
@@ -65,12 +65,12 @@ static void gameUpdate()
         }
         else
         {
-            if (unit->roam.t > GetTime())
-            {
-                float rotation = randomFloat(0, 2 * PI);
-                float radius = randomFloat(50, 500);
-                Vector2 newPosition = calculatePointOnCircle(transform->position, rotation, radius);
-            }
+            // if (unit->roam.t > GetTime())
+            // {
+            //     float rotation = randomFloat(0, 2 * PI);
+            //     float radius = randomFloat(50, 500);
+            //     Vector2 newPosition = calculatePointOnCircle(transform->position, rotation, radius);
+            // }
         }
     }
 }

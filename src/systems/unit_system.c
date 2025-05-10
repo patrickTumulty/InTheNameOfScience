@@ -105,7 +105,7 @@ static void createEntity(float x, float y, Texture2D texture, Shader *shader)
     sprite2D->texture = texture;
     sprite2D->source = (Rectangle) {0, 0, textureWidth, textureHeight};
     sprite2D->origin = (Vector2) {textureWidth / 2, textureHeight / 2};
-    sprite2D->rotation = 90;
+    sprite2D->rotationDegrees = 90;
     sprite2D->shader = shader;
     sprite2D->shaderCallback = configureShader;
 
@@ -235,7 +235,7 @@ static void renderUpdate()
                    green);
     }
 
-    
+
     rc = prayEntityLookupAll(&units, C(CID_TRANSFORM, CID_UNIT), 2);
     node = nullptr;
     LListForEach(&units, node)
@@ -284,8 +284,8 @@ static void gameUpdate()
     {
         Entity *entity = prayEntityLookup(C(CID_UNIT), 1);
         TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
-        
-        projectileNew(transform->position, transform->rotation, 10);
+
+        projectileNew(transform->position, transform->rotationDegrees, 10);
     }
 
     // LList enemies;
@@ -302,7 +302,7 @@ static void gameUpdate()
     //     TransformComponent *unitTransform = prayEntityGetComponent(unitEntity, CID_TRANSFORM);
     //     TargetingComponent *unitTargeting = prayEntityGetComponent(unitEntity, CID_TARGETING);
     //     PathfindComponent *unitPathfind = prayEntityGetComponent(unitEntity, CID_PATHFINDING);
-    //     
+    //
     //     if (unitTargeting->target != nullptr)
     //     {
     //         continue; // We already have a target

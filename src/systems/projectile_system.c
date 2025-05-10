@@ -10,6 +10,7 @@
 #include "pray_utils.h"
 #include "projectile_component.h"
 #include "raylib.h"
+#include <stdio.h>
 
 
 void projectileNew(Vector2 origin, float angle, float damage)
@@ -17,12 +18,12 @@ void projectileNew(Vector2 origin, float angle, float damage)
     Entity *entity = prayEntityNew(C(CID_TRANSFORM, CID_PROJECTILE), 2);
     TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
     transform->position = origin;
-    transform->rotation = angle;
+    transform->rotationDegrees = angle;
     ProjectileComponent *projectile = prayEntityGetComponent(entity, CID_PROJECTILE);
     projectile->origin = origin;
     projectile->speed = 1000;
     projectile->range = 4000;
-    projectile->terminator = calculatePointOnCircle(origin, angle, projectile->range);
+    projectile->terminator = calculatePointOnCircle(origin, DEG2RAD * angle, projectile->range);
     projectile->damage = damage;
     prayEntityRegister(entity);
 }

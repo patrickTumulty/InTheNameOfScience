@@ -39,7 +39,7 @@ typedef struct Sprite2DComponent
     Texture2D texture;
     Rectangle source;
     Vector2 origin;
-    float rotation; // degrees
+    float rotationDegrees; // degrees
     Shader *shader;
     PreShaderCallback shaderCallback;
 } Sprite2DComponent;
@@ -52,7 +52,7 @@ typedef struct
 typedef struct
 {
     Vector2 position;
-    float rotation; // 0.0 to 359.0
+    float rotationDegrees; // 0.0 to 359.0
 } TransformComponent;
 
 typedef enum : u8

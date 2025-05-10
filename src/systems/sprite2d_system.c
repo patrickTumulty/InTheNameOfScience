@@ -21,13 +21,13 @@ static void renderUpdate()
         Sprite2DComponent *sprite2d = prayEntityGetComponent(entity, CID_SPRITE_2D);
 
         Vector2 position = {0, 0};
-        float rotation = 0;
+        float rotationDegrees = 0;
 
         TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
         if (transform != nullptr)
         {
             position = transform->position;
-            rotation = transform->rotation;
+            rotationDegrees = transform->rotationDegrees;
         }
 
         Rectangle source = sprite2d->source;
@@ -43,7 +43,7 @@ static void renderUpdate()
                        sprite2d->source,
                        (Rectangle) {position.x, position.y, source.width, source.height},
                        sprite2d->origin,
-                       rotation + sprite2d->rotation,
+                       rotationDegrees + sprite2d->rotationDegrees,
                        WHITE);
 
         if (sprite2d->shader != nullptr)
