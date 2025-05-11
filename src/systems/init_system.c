@@ -5,7 +5,6 @@
 #include "pray_entity_registry.h"
 #include "pray_system.h"
 #include "turret_component.h"
-#include "turret_system.h"
 #include "world_component.h"
 #include <float.h>
 
@@ -65,7 +64,21 @@ static void createEntity(float x, float y, Texture2D texture, Shader *shader)
     u32 cidsLen = sizeof(cids) / sizeof(ComponentID);
 
     Entity *unitEntity = prayEntityNew(cids, cidsLen);
-    TransformComponent *transform = prayEntityGetComponent(unitEntity, CID_TRANSFORM);
+
+    TransformComponent *transform = nullptr;
+    Sprite2DComponent *sprite2D = nullptr;
+    Collider2DComponent *collider2D = nullptr;
+
+    ComponentIDRef map[] = {
+        CID_REF(CID_TRANSFORM, &transform),
+        CID_REF(CID_SPRITE_2D, &sprite2D),
+        CID_REF(CID_COLLIDER_2D, &collider2D),
+    };
+    u32 mapLen = CID_REF_MAP_LEN(map);
+
+    prayEntityGetComponents(unitEntity, map, mapLen);
+
+    // transform = prayEntityGetComponent(unitEntity, CID_TRANSFORM);
 
     transform->position.x = x * world->tileSize;
     transform->position.y = y * world->tileSize;
@@ -73,7 +86,7 @@ static void createEntity(float x, float y, Texture2D texture, Shader *shader)
     float textureWidth = (float) texture.width;
     float textureHeight = (float) texture.height;
 
-    Sprite2DComponent *sprite2D = prayEntityGetComponent(unitEntity, CID_SPRITE_2D);
+    // sprite2D = prayEntityGetComponent(unitEntity, CID_SPRITE_2D);
 
     sprite2D->texture = texture;
     sprite2D->source = (Rectangle) {0, 0, textureWidth, textureHeight};
@@ -82,7 +95,8 @@ static void createEntity(float x, float y, Texture2D texture, Shader *shader)
     sprite2D->shader = shader;
     sprite2D->shaderCallback = configureShader;
 
-    Collider2DComponent *collider2D = prayEntityGetComponent(unitEntity, CID_COLLIDER_2D);
+    // collider2D = prayEntityGetComponent(unitEntity, CID_COLLIDER_2D);
+
     collider2D->type = COLLIDER_2D_TRIANGLE;
     collider2D->radius = 80;
     collider2D->offset = (Vector2) {.x = -20, .y = 0};

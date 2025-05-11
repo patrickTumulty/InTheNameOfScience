@@ -7,6 +7,12 @@
 #include "tmem.h"
 #include <stdarg.h>
 
+typedef struct
+{
+    u32 componentID;
+    void *componentPtr;
+} ComponentPtr;
+
 static u64 entityCounter = 0;
 
 Entity *prayEntityNew(const u32 *componentIDs, u32 componentIDsCount)
@@ -95,4 +101,25 @@ void *prayEntityGetComponent(Entity *entity, u32 componentID)
     }
 
     return nullptr;
+}
+
+
+void prayEntityGetComponents(Entity *entity, ComponentIDRef *refMap, u32 refMapLen)
+{
+    if (entity == nullptr)
+    {
+        return;
+    }
+
+    for (int i = 0; i < entity->componentLookup.length; i++)
+    {
+        ComponentPtr *cptr = alistGet(&entity->componentLookup, i);
+        for (int j = 0; j < refMapLen; j++)
+        {
+            if (cptr->componentID == refMap[j].componentID)
+            {
+                (*refMap[j].ptr) = cptr->componentPtr;
+            }
+        }
+    }
 }

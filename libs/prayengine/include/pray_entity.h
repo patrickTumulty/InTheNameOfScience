@@ -8,11 +8,11 @@
 typedef struct
 {
     u32 componentID;
-    void *componentPtr;
-} ComponentPtr;
+    void **ptr;
+} ComponentIDRef;
 
-#define CPTR(CID, PTR) \
-    (ComponentPtr) { .componentID = (CID), .componentPtr = (PTR) }
+#define CID_REF_MAP_LEN(REFMAP) sizeof(REFMAP) / sizeof(ComponentIDRef);
+#define CID_REF(CID, PTR) (ComponentIDRef){ (CID), (void**) (PTR)}
 
 typedef struct
 {
@@ -24,6 +24,7 @@ typedef struct
 Entity *prayEntityNew(const u32 *componentIDs, u32 componentIDsCount);
 Entity *prayEntityFree(Entity *entity);
 void *prayEntityGetComponent(Entity *entity, u32 componentID);
+void prayEntityGetComponents(Entity *entity, ComponentIDRef *refMap, u32 refMapLen);
 
 #define getComponent(ENTITY, CID) prayEntityGetComponent((ENTITY), (CID))
 
