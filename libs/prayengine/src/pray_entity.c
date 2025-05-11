@@ -96,24 +96,3 @@ void *prayEntityGetComponent(Entity *entity, u32 componentID)
 
     return nullptr;
 }
-
-
-void prayEntityGetComponents(Entity *entity, ComponentPtr *componentPtrs, u32 componentPtrsCount)
-{
-    if (entity == nullptr)
-    {
-        return;
-    }
-
-    for (int i = 0; i < entity->componentLookup.length; i++)
-    {
-        ComponentPtr *cptr = alistGet(&entity->componentLookup, i);
-        for (int j = 0; j < componentPtrsCount; j++)
-        {
-            if (cptr->componentID == componentPtrs[j].componentID)
-            {
-                componentPtrs[j].componentPtr = cptr->componentPtr;
-            }
-        }
-    }
-}
