@@ -1,21 +1,17 @@
 
 #include "itnos_components.h"
 
+#include "health_component.h"
 #include "pathfind_component.h"
 #include "pray_component.h"
 #include "projectile_component.h"
+#include "turret_component.h"
 #include "world_component.h"
 #include <pthread.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <threads.h>
 
-static void initHealth(void *component)
-{
-    HealthComponent *healthComponent = component;
-    healthComponent->maxHealth = 100;
-    healthComponent->currentHealth = 100;
-}
 
 void registerComponents()
 {
@@ -30,6 +26,8 @@ void registerComponents()
     prayComponentRegister(CID_TARGETING, sizeof(TargetingComponent), nullptr, nullptr);
     prayComponentRegister(CID_ENEMY, 0, nullptr, nullptr);
     prayComponentRegister(CID_PROJECTILE, sizeof(ProjectileComponent), nullptr, nullptr);
+    prayComponentRegister(CID_TARGET, 0, nullptr, nullptr);
+    prayComponentRegister(CID_TURRET, sizeof(TurretComponent), nullptr, nullptr);
 }
 
 

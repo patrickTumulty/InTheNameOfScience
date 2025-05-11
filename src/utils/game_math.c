@@ -3,6 +3,12 @@
 #include "raylib.h"
 #include <math.h>
 
+void calculateTriangle(Vector2 center, float roatationDegrees, float radius, Vector2 points[3])
+{
+    points[0] = calculatePointOnCircle(center, DEG2RAD * roatationDegrees, radius);
+    points[1] = calculatePointOnCircle(center, DEG2RAD * (120 + roatationDegrees), radius);
+    points[2] = calculatePointOnCircle(center, DEG2RAD * (240 + roatationDegrees), radius);
+}
 
 /**
  * @brief Calculate angle between 2 points 
@@ -38,10 +44,16 @@ Vector2 calculatePointOnCircle(Vector2 origin, float radians, float radius)
     };
 }
 
-
 float calculateSlope(Vector2 p1, Vector2 p2)
 {
     float deltaX = p2.x - p1.x;
     float deltaY = p2.y - p1.y;
     return deltaX == 0 ? 1.0f : deltaY / deltaX;
+}
+
+float vector2Distance(Vector2 p1, Vector2 p2)
+{
+    float deltaX = p2.x - p1.x;
+    float deltaY = p2.y - p1.y;
+    return sqrtf((deltaX * deltaX) + (deltaY * deltaY));
 }

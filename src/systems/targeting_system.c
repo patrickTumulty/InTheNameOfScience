@@ -26,7 +26,7 @@ static void gameUpdate()
         }
 
         TransformComponent *targetTransform = prayEntityGetComponent(targeting->target, CID_TRANSFORM);
-        HealthComponent *healthComponent = prayEntityGetComponent(targeting->target, CID_HEALTH);
+        UnitComponent *healthComponent = prayEntityGetComponent(targeting->target, CID_HEALTH);
 
 
     }

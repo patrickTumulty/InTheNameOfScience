@@ -10,9 +10,11 @@
 
 struct Sprite2DComponent;
 
-typedef void (*PreShaderCallback)(Entity *entity, struct Sprite2DComponent *sprite2D);
+typedef void (*PreShaderCallback)(Entity *entity,
+                                  struct Sprite2DComponent *sprite2D);
 
-typedef struct {
+typedef struct
+{
     bool roaming;
     float t;
 } Roam;
@@ -21,12 +23,6 @@ typedef struct
 {
     Roam roam;
 } UnitComponent;
-
-typedef struct
-{
-    int maxHealth;
-    int currentHealth;
-} HealthComponent;
 
 typedef struct
 {
@@ -84,11 +80,12 @@ typedef enum : u32
     CID_TARGETING,
     CID_ENEMY,
     CID_PROJECTILE,
+    CID_TARGET,
+    CID_TURRET,
 } ComponentID;
 
 #define C(...) \
     (ComponentID[]) { __VA_ARGS__ }
-
 
 char *componentID2Str(ComponentID id);
 
