@@ -1,11 +1,10 @@
 
-#include "sprite2d_system.h"
-#include "itnos_components.h"
+#include "pray_default_systems.h"
+#include "linked_list.h"
+#include "pray_default_components.h"
 #include "pray_entity.h"
 #include "pray_entity_registry.h"
-#include "pray_default_components.h"
 #include "pray_system.h"
-#include "raylib.h"
 
 static void renderUpdate()
 {
@@ -20,12 +19,12 @@ static void renderUpdate()
     LListForEach(&entities, node)
     {
         Entity *entity = LListGetEntry(node, Entity);
-        Sprite2DComponent *sprite2d = getComponent(entity, Sprite2DComponent);
+        auto sprite2d = getComponent(entity, Sprite2DComponent);
+        auto transform = getComponent(entity, Transform2DComponent);
 
         Vector2 position = {0, 0};
         float rotationDegrees = 0;
 
-        Transform2DComponent *transform = getComponent(entity, Transform2DComponent);
         if (transform != nullptr)
         {
             position = transform->position;
@@ -55,11 +54,16 @@ static void renderUpdate()
     }
 }
 
-void registerSprite2DSystem()
+static void registerSprite2DSystem()
 {
     System sprite2dSystem = {
         .name = "Sprite 2D System",
         .renderUpdateWorldSpace = renderUpdate,
     };
     praySystemsRegister(sprite2dSystem);
+}
+
+void prayRegisterDefaultSystems()
+{
+    registerSprite2DSystem();
 }

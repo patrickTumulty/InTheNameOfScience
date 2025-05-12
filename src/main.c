@@ -2,10 +2,10 @@
 #include "camera_system.h"
 #include "init_system.h"
 #include "itnos_components.h"
+#include "pray_default_systems.h"
 #include "pray_engine.h"
 #include "projectile_system.h"
 #include "selection_system.h"
-#include "sprite2d_system.h"
 #include "path_system.h"
 #include "turret_system.h"
 #include "unit_system.h"
@@ -36,8 +36,8 @@ int main(void)
     registerPathSystem();
     registerTurretSystem();
     registerCameraSystem();
-    registerSprite2DSystem();
     registerProjectileSystem();
+    prayRegisterDefaultSystems();
     registerUnitSystem();
     registerSelectionSystem();
 

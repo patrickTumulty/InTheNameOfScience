@@ -30,6 +30,7 @@ file(GLOB SOURCES
     src/pray_engine.c
     src/pray_default_components.c
     src/pray_entity_registry.c
+    src/pray_default_systems.c
     src/pray_entity.c
     src/pray_system.c
     src/pray_utils.c
