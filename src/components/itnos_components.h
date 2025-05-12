@@ -2,16 +2,27 @@
 #ifndef ITNOS_COMPONENTS_H
 #define ITNOS_COMPONENTS_H
 
-#include "astar.h"
 #include "bool_mat.h"
 #include "common_types.h"
+#include "pray_default_components.h"
 #include "pray_entity.h"
 #include "raylib.h"
 
-struct Sprite2DComponent;
+#ifdef COMPONENT_OFFSET
+#undef COMPONENT_OFFSET
+#endif
+#define COMPONENT_OFFSET COMPONENT_BANK_A
 
-typedef void (*PreShaderCallback)(Entity *entity,
-                                  struct Sprite2DComponent *sprite2D);
+typedef struct
+{
+    u32 rows;
+    u32 cols;
+    float tileSize;
+    BoolMat *navGrid;
+    char **world;
+} WorldComponent;
+
+REGISTER_CID(WorldComponent);
 
 typedef struct
 {
@@ -24,32 +35,28 @@ typedef struct
     Roam roam;
 } UnitComponent;
 
+REGISTER_CID(UnitComponent);
+
 typedef struct
 {
     Entity *target;
     int damage;
 } TargetingComponent;
 
-typedef struct Sprite2DComponent
+REGISTER_CID(TargetingComponent);
+
+typedef struct
 {
-    Texture2D texture;
-    Rectangle source;
-    Vector2 origin;
-    float rotationDegrees; // degrees
-    Shader *shader;
-    PreShaderCallback shaderCallback;
-} Sprite2DComponent;
+} EnemyComponent;
+
+REGISTER_CID(EnemyComponent);
 
 typedef struct
 {
     bool selected;
 } SelectableComponent;
 
-typedef struct
-{
-    Vector2 position;
-    float rotationDegrees; // 0.0 to 359.0
-} TransformComponent;
+REGISTER_CID(SelectableComponent);
 
 typedef enum : u8
 {
@@ -66,28 +73,62 @@ typedef struct
     Vector2 offset;
 } Collider2DComponent;
 
-typedef enum : u32
+REGISTER_CID(Collider2DComponent);
+
+typedef void (*OnHealthDepletedCB)(void);
+
+typedef struct
 {
-    CID_RESERVED = 0,
-    CID_WORLD,
-    CID_TRANSFORM,
-    CID_UNIT,
-    CID_PATHFINDING,
-    CID_SPRITE_2D,
-    CID_COLLIDER_2D,
-    CID_SELECTABLE,
-    CID_HEALTH,
-    CID_TARGETING,
-    CID_ENEMY,
-    CID_PROJECTILE,
-    CID_TARGET,
-    CID_TURRET,
-} ComponentID;
+    OnHealthDepletedCB healthDepletedCallback;
+    int maxHealth;
+    int currentHealth;
+} HealthComponent;
 
-#define C(...) \
-    (ComponentID[]) { __VA_ARGS__ }
+REGISTER_CID(HealthComponent);
 
-char *componentID2Str(ComponentID id);
+typedef struct
+{
+    float damage;
+    float roundsPerSecond;
+    float radius;
+    double lastFiredTimestamp;
+    Entity *target;
+} TurretComponent;
+
+REGISTER_CID(TurretComponent);
+
+typedef struct
+{
+    float speed;
+    float damage;
+    Vector2 origin;
+    Vector2 terminator;
+    float range;
+    u8 targetBitmask;
+} ProjectileComponent;
+
+REGISTER_CID(ProjectileComponent);
+
+typedef void (*OnHitCB)(Entity *targetEntity, Entity *projectileEntity, ProjectileComponent *projectileComponent);
+
+typedef struct
+{
+    OnHitCB onHitCallback;
+    u8 targetBitmask;
+} TargetComponent;
+
+REGISTER_CID(TargetComponent);
+
+typedef struct
+{
+    LList path;
+    Vector2 currentPoint;
+    bool active;
+    int index;
+    float speed;
+} PathfindComponent;
+
+REGISTER_CID(PathfindComponent);
 
 void registerComponents();
 

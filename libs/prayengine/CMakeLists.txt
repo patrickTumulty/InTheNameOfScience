@@ -28,6 +28,7 @@ file(GLOB SOURCES
     src/pray_component.c
     src/pray_camera.c
     src/pray_engine.c
+    src/pray_default_components.c
     src/pray_entity_registry.c
     src/pray_entity.c
     src/pray_system.c

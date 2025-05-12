@@ -10,6 +10,7 @@
 #include "pathfind_component.h"
 #include "pointer_list.h"
 #include "pray_camera.h"
+#include "pray_default_components.h"
 #include "pray_entity.h"
 #include "pray_entity_registry.h"
 #include "pray_system.h"
@@ -19,7 +20,6 @@
 #include "tmem.h"
 #include "world_component.h"
 #include <stdatomic.h>
-#include <stdio.h>
 #include <threads.h>
 
 #define VISION_CIRCLE 1000
@@ -28,8 +28,8 @@ static WorldComponent *world;
 
 static void start()
 {
-    Entity *worldEntity = prayEntityLookup(C(CID_WORLD), 1);
-    world = prayEntityGetComponent(worldEntity, CID_WORLD);
+    Entity *worldEntity = prayEntityLookup(C(CID(WorldComponent)), 1);
+    world = getComponent(worldEntity, WorldComponent);
 }
 
 static void setPathForSelectedUnits(WorldComponent *world, Vector2 position)
@@ -48,8 +48,8 @@ static void setPathForSelectedUnits(WorldComponent *world, Vector2 position)
     for (int i = 0; i < selectedEntities.length; i++)
     {
         Entity *entity = plistGet(&selectedEntities, i);
-        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
-        PathfindComponent *pathfind = prayEntityGetComponent(entity, CID_PATHFINDING);
+        auto transform = getComponent(entity, Transform2DComponent);
+        auto pathfind = getComponent(entity, PathfindComponent);
 
         point = position;
 
@@ -106,14 +106,14 @@ static void setPathForSelectedUnits(WorldComponent *world, Vector2 position)
 static void renderUpdate()
 {
     LList units;
-    Rc rc = prayEntityLookupAll(&units, C(CID_TRANSFORM, CID_COLLIDER_2D), 2);
+    Rc rc = prayEntityLookupAll(&units, C(CID(Transform2DComponent), CID(Collider2DComponent)), 2);
 
     LNode *node = nullptr;
     LListForEach(&units, node)
     {
         Entity *entity = LListGetEntry(node, Entity);
-        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
-        Collider2DComponent *collider2D = prayEntityGetComponent(entity, CID_COLLIDER_2D);
+        Transform2DComponent *transform = getComponent(entity, Transform2DComponent);
+        Collider2DComponent *collider2D = getComponent(entity, Collider2DComponent);
 
         Color green = GREEN;
         green.a = 120;
@@ -124,13 +124,12 @@ static void renderUpdate()
                    green);
     }
 
-
-    rc = prayEntityLookupAll(&units, C(CID_TRANSFORM, CID_UNIT), 2);
+    rc = prayEntityLookupAll(&units, C(CID(Transform2DComponent), CID(UnitComponent)), 2);
     node = nullptr;
     LListForEach(&units, node)
     {
         Entity *entity = LListGetEntry(node, Entity);
-        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
+        Transform2DComponent *transform = getComponent(entity, Transform2DComponent);
 
         DrawCircleLines((int) transform->position.x, (int) transform->position.y, VISION_CIRCLE, YELLOW);
     }
@@ -171,8 +170,8 @@ static void gameUpdate()
 
     if (IsKeyPressed(KEY_P))
     {
-        Entity *entity = prayEntityLookup(C(CID_UNIT), 1);
-        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
+        Entity *entity = prayEntityLookup(C(CID(UnitComponent)), 1);
+        auto transform = getComponent(entity, Transform2DComponent);
 
         projectileNew(transform->position, transform->rotationDegrees, 10);
     }

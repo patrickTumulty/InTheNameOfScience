@@ -3,6 +3,7 @@
 #include "game_math.h"
 #include "itnos_components.h"
 #include "linked_list.h"
+#include "pray_default_components.h"
 #include "pray_entity.h"
 #include "pray_entity_registry.h"
 #include "pray_system.h"
@@ -14,22 +15,22 @@
 static void gameUpdate()
 {
     LList turrets;
-    prayEntityLookupAll(&turrets, C(CID_TURRET), 1);
+    prayEntityLookupAll(&turrets, C(CID(TurretComponent)), 1);
 
     LList targets;
-    prayEntityLookupAll(&targets, C(CID_TARGET), 1);
+    prayEntityLookupAll(&targets, C(CID(TargetComponent)), 1);
 
     LNode *node1 = nullptr;
     LNode *node2 = nullptr;
     LListForEach(&turrets, node1)
     {
         Entity *turretEntity = LListGetEntry(node1, Entity);
-        TurretComponent *turret = prayEntityGetComponent(turretEntity, CID_TURRET);
-        TransformComponent *turretTransform = prayEntityGetComponent(turretEntity, CID_TRANSFORM);
+        TurretComponent *turret = getComponent(turretEntity, TurretComponent);
+        Transform2DComponent *turretTransform = getComponent(turretEntity, Transform2DComponent);
 
         if (turret->target != nullptr)
         {
-            TransformComponent *targetTransform = prayEntityGetComponent(turret->target, CID_TRANSFORM);
+            Transform2DComponent *targetTransform = getComponent(turret->target, Transform2DComponent);
 
             float distance = vector2Distance(turretTransform->position, targetTransform->position);
             if (distance > turret->radius)
@@ -55,7 +56,7 @@ static void gameUpdate()
         LListForEach(&targets, node2)
         {
             Entity *targetEntity = LListGetEntry(node2, Entity);
-            TransformComponent *targetTransform = prayEntityGetComponent(targetEntity, CID_TRANSFORM);
+            Transform2DComponent *targetTransform = getComponent(targetEntity, Transform2DComponent);
 
             float distance = vector2Distance(turretTransform->position, targetTransform->position);
             if (distance < turret->radius)
@@ -70,14 +71,14 @@ static void gameUpdate()
 static void renderUpdate()
 {
     LList turrets;
-    prayEntityLookupAll(&turrets, C(CID_TURRET), 1);
+    prayEntityLookupAll(&turrets, C(CID(TurretComponent)), 1);
 
     LNode *node1 = nullptr;
     LListForEach(&turrets, node1)
     {
         Entity *turretEntity = LListGetEntry(node1, Entity);
-        TurretComponent *turret = prayEntityGetComponent(turretEntity, CID_TURRET);
-        TransformComponent *turretTransform = prayEntityGetComponent(turretEntity, CID_TRANSFORM);
+        TurretComponent *turret = getComponent(turretEntity, TurretComponent);
+        Transform2DComponent *turretTransform = getComponent(turretEntity, Transform2DComponent);
 
         int x = (int) turretTransform->position.x;
         int y = (int) turretTransform->position.y;

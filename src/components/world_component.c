@@ -1,5 +1,6 @@
 
 #include "world_component.h"
+#include "itnos_components.h"
 #include "tmem.h"
 
 constexpr static int WORLD_HEIGHT = 50;

@@ -5,13 +5,13 @@
 #include "linked_list.h"
 #include "pointer_list.h"
 #include "pray_camera.h"
+#include "pray_default_components.h"
 #include "pray_entity.h"
 #include "pray_entity_registry.h"
 #include "pray_system.h"
 #include "pray_utils.h"
 #include "raylib.h"
 #include <math.h>
-#include <stdio.h>
 #include <string.h>
 
 static int selectedEntitiesCount = 0;
@@ -65,7 +65,7 @@ static void clearSelectedEntities()
     for (int i = 0; i < selectedEntitiesCount; i++)
     {
         Entity *entity = plistGet(&selectedEntities, i);
-        SelectableComponent *selectable = prayEntityGetComponent(entity, CID_SELECTABLE);
+        SelectableComponent *selectable = getComponent(entity, SelectableComponent);
         selectable->selected = false;
         plistSet(&selectedEntities, i, nullptr);
     }
@@ -94,7 +94,7 @@ static void updateSelectionRecangle()
 static void checkForSingleSelection()
 {
     LList units;
-    Rc rc = prayEntityLookupAll(&units, C(CID_SELECTABLE, CID_TRANSFORM, CID_COLLIDER_2D), 3);
+    Rc rc = prayEntityLookupAll(&units, C(CID(SelectableComponent), CID(Transform2DComponent), CID(Collider2DComponent)), 3);
     if (rc != RC_OK)
     {
         return;
@@ -104,9 +104,9 @@ static void checkForSingleSelection()
     LListForEach(&units, node)
     {
         Entity *entity = LListGetEntry(node, Entity);
-        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
-        Collider2DComponent *collider2D = prayEntityGetComponent(entity, CID_COLLIDER_2D);
-        SelectableComponent *selectable = prayEntityGetComponent(entity, CID_SELECTABLE);
+        auto transform = getComponent(entity, Transform2DComponent);
+        auto collider2D = getComponent(entity, Collider2DComponent);
+        auto selectable = getComponent(entity, SelectableComponent);
 
         if (CheckCollisionPointCircle(mouseDownPoint, transform->position, collider2D->radius))
         {
@@ -120,7 +120,7 @@ static void checkForSingleSelection()
 static void checkForMultiSelection()
 {
     LList units;
-    Rc rc = prayEntityLookupAll(&units, C(CID_SELECTABLE, CID_TRANSFORM, CID_COLLIDER_2D), 3);
+    Rc rc = prayEntityLookupAll(&units, C(CID(SelectableComponent), CID(Transform2DComponent), CID(Collider2DComponent)), 3);
     if (rc != RC_OK)
     {
         return;
@@ -130,9 +130,9 @@ static void checkForMultiSelection()
     LListForEach(&units, node)
     {
         Entity *entity = LListGetEntry(node, Entity);
-        Collider2DComponent *collider2D = prayEntityGetComponent(entity, CID_COLLIDER_2D);
-        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
-        SelectableComponent *selectable = prayEntityGetComponent(entity, CID_SELECTABLE);
+        auto transform = getComponent(entity, Transform2DComponent);
+        auto collider2D = getComponent(entity, Collider2DComponent);
+        auto selectable = getComponent(entity, SelectableComponent);
 
         Vector2 position = prayVector2Add(transform->position, collider2D->offset);
         if (CheckCollisionCircleRec(position, collider2D->radius, selectionRectangle))

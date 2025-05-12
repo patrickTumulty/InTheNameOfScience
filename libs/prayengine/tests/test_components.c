@@ -1,6 +1,7 @@
 
 #include "test_components.h"
 #include "common_types.h"
+#include "linked_list.h"
 #include "pray_component.h"
 #include "tmem.h"
 #include <CUnit/Basic.h>
@@ -39,60 +40,59 @@ void registerTestComponents()
 {
     prayComponnentInitialize();
 
-    prayComponentRegister(PLAYER, sizeof(PlayerComponent), initPlayer, nullptr);
-
-    prayComponentRegister(TRANSFORM, sizeof(TransformComponent), nullptr, nullptr);
-
-    prayComponentRegister(HEALTH, sizeof(PlayerComponent), nullptr, nullptr);
-
-    prayComponentRegister(WORLD, sizeof(WorldComponent), initWorld, deinitWorld);
-
-    prayComponentRegister(ENEMY, sizeof(EnemyComponent), nullptr, nullptr);
+    registerComponent(PlayerComponent, initPlayer, nullptr);
+    registerComponent(TransformComponent, nullptr, nullptr);
+    registerComponent(HealthComponent, nullptr, nullptr);
+    registerComponent(WorldComponent, initWorld, deinitWorld);
+    registerComponent(EnemyComponent, nullptr, nullptr);
 }
 
 void registerComponentTest()
 {
-    Rc rc = prayComponentRegister(PLAYER, sizeof(PlayerComponent), initPlayer, nullptr);
+    Rc rc = registerComponent(PlayerComponent, initPlayer, nullptr);
     CU_ASSERT_EQUAL(rc, RC_OK);
 
-    rc = prayComponentRegister(PLAYER, sizeof(PlayerComponent), initPlayer, nullptr);
+    rc = registerComponent(PlayerComponent, initPlayer, nullptr);
     CU_ASSERT_EQUAL(rc, RC_BAD_PARAM);
 
-    rc = prayComponentRegister(TRANSFORM, sizeof(TransformComponent), nullptr, nullptr);
+    rc = registerComponent(TransformComponent, nullptr, nullptr);
     CU_ASSERT_EQUAL(rc, RC_OK);
 
-    rc = prayComponentRegister(HEALTH, sizeof(HealthComponent), nullptr, nullptr);
+    rc = registerComponent(HealthComponent, nullptr, nullptr);
     CU_ASSERT_EQUAL(rc, RC_OK);
 
-    rc = prayComponentRegister(WORLD, sizeof(WorldComponent), initWorld, deinitWorld);
+    rc = registerComponent(WorldComponent, initWorld, deinitWorld);
+    CU_ASSERT_EQUAL(rc, RC_OK);
+
+    rc = registerComponent(EnemyComponent, nullptr, nullptr);
     CU_ASSERT_EQUAL(rc, RC_OK);
 
     ComponentInitializer ci = {};
-    rc = prayComponentGetInitializer(PLAYER, &ci);
+    rc = prayComponentGetInitializer(CID(PlayerComponent), &ci);
     CU_ASSERT_EQUAL(rc, RC_OK);
-    CU_ASSERT_EQUAL(ci.id, PLAYER);
+    CU_ASSERT_EQUAL(ci.id, CID(PlayerComponent));
     CU_ASSERT_EQUAL(ci.size, sizeof(PlayerComponent));
     CU_ASSERT_PTR_NOT_NULL(ci.initialize);
     CU_ASSERT_PTR_EQUAL(ci.initialize, initPlayer);
     CU_ASSERT_PTR_NULL(ci.deinitialize);
 
-    rc = prayComponentGetInitializer(TRANSFORM, &ci);
+    rc = prayComponentGetInitializer(CID(TransformComponent), &ci);
     CU_ASSERT_EQUAL(rc, RC_OK);
-    CU_ASSERT_EQUAL(ci.id, TRANSFORM);
+    CU_ASSERT_EQUAL(ci.id, CID(TransformComponent));
     CU_ASSERT_EQUAL(ci.size, sizeof(TransformComponent));
     CU_ASSERT_PTR_NULL(ci.initialize);
     CU_ASSERT_PTR_NULL(ci.deinitialize);
 
-    rc = prayComponentGetInitializer(HEALTH, &ci);
+    rc = prayComponentGetInitializer(CID(HealthComponent), &ci);
     CU_ASSERT_EQUAL(rc, RC_OK);
-    CU_ASSERT_EQUAL(ci.id, HEALTH);
+    CU_ASSERT_EQUAL(ci.id, CID(HealthComponent));
     CU_ASSERT_EQUAL(ci.size, sizeof(HealthComponent));
     CU_ASSERT_PTR_NULL(ci.initialize);
     CU_ASSERT_PTR_NULL(ci.deinitialize);
 
-    rc = prayComponentGetInitializer(WORLD, &ci);
+    rc = prayComponentGetInitializer(CID(WorldComponent), &ci);
     CU_ASSERT_EQUAL(rc, RC_OK);
-    CU_ASSERT_EQUAL(ci.id, WORLD);
+    CU_ASSERT_EQUAL(ci.id, CID(WorldComponent));
     CU_ASSERT_EQUAL(ci.size, sizeof(WorldComponent));
     CU_ASSERT_PTR_NOT_NULL(ci.initialize);
     CU_ASSERT_PTR_EQUAL(ci.initialize, initWorld);
@@ -110,7 +110,7 @@ void initDeinitComponents()
     registerTestComponents();
 
     ComponentInitializer componentInitializer = {0};
-    Rc rc = prayComponentGetInitializer(PLAYER, &componentInitializer);
+    Rc rc = prayComponentGetInitializer(CID(PlayerComponent), &componentInitializer);
     CU_ASSERT_EQUAL_FATAL(rc, RC_OK);
 
     PlayerComponent *playerComponent = tmemcalloc(1, componentInitializer.size);
@@ -124,7 +124,7 @@ void initDeinitComponents()
 
     tmemfree(playerComponent);
 
-    rc = prayComponentGetInitializer(WORLD, &componentInitializer);
+    rc = prayComponentGetInitializer(CID(WorldComponent), &componentInitializer);
     CU_ASSERT_EQUAL_FATAL(rc, RC_OK);
 
     WorldComponent *worldComponent = tmemcalloc(1, componentInitializer.size);

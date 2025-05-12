@@ -3,19 +3,10 @@
 #define TEST_COMPONENTS_H
 
 #include "common_types.h"
+#include "pray_component.h"
 #include "raylib.h"
 
-typedef enum : u32
-{
-    EMPTY = 0,
-    PLAYER = 1,
-    TRANSFORM = 2,
-    HEALTH = 3,
-    WORLD = 4,
-    ENEMY = 5,
-} TestComponentID;
-
-#define C(...) (TestComponentID[]) { __VA_ARGS__ }
+#define COMPONENT_OFFSET COMPONENT_BANK_A
 
 typedef struct
 {
@@ -24,6 +15,8 @@ typedef struct
     char origin[20];
 } PlayerComponent;
 
+REGISTER_CID(PlayerComponent);
+
 typedef struct
 {
     char enemyName[20];
@@ -31,10 +24,14 @@ typedef struct
     char origin[20];
 } EnemyComponent;
 
+REGISTER_CID(EnemyComponent);
+
 typedef struct
 {
     Vector2 position;
 } TransformComponent;
+
+REGISTER_CID(TransformComponent);
 
 typedef struct
 {
@@ -42,11 +39,15 @@ typedef struct
     u32 maxHealth;
 } HealthComponent;
 
+REGISTER_CID(HealthComponent);
+
 typedef struct
 {
     u8 *world;
     u64 worldSize;
 } WorldComponent;
+
+REGISTER_CID(WorldComponent);
 
 void registerTestComponents();
 

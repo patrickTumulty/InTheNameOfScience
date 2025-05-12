@@ -5,9 +5,10 @@
 #include "tmem.h"
 #include <raylib.h>
 
+cid globalCidCounter;
 static LList componentsList;
 
-static ComponentInitializer *findComponentInitializer(u32 componentID)
+static ComponentInitializer *findComponentInitializer(cid componentID)
 {
     LNode *lnode = nullptr;
     LListForEach(&componentsList, lnode)
@@ -25,7 +26,7 @@ static ComponentInitializer *findComponentInitializer(u32 componentID)
     return nullptr;
 }
 
-Rc prayComponentGetInitializer(u32 componentID, ComponentInitializer *componentInitialzer)
+Rc prayComponentGetInitializer(cid componentID, ComponentInitializer *componentInitialzer)
 {
     ComponentInitializer *compInitializer = findComponentInitializer(componentID);
     if (compInitializer == nullptr)
@@ -36,10 +37,10 @@ Rc prayComponentGetInitializer(u32 componentID, ComponentInitializer *componentI
     return RC_OK;
 }
 
-Rc prayComponentRegister(u32 componentID,
-                     u64 componentSize,
-                     Consumer initCallback,
-                     Consumer deinitCallback)
+Rc prayComponentRegister(cid componentID,
+                         u64 componentSize,
+                         Consumer initCallback,
+                         Consumer deinitCallback)
 {
     ComponentInitializer *compInitializer = findComponentInitializer(componentID);
     if (compInitializer != nullptr)
@@ -72,4 +73,9 @@ void prayComponentsDestroy()
         tmemfree(compInitializer);
         node = llistPopFront(&componentsList);
     }
+}
+
+cid nextCid()
+{
+
 }

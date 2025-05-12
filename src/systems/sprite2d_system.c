@@ -1,14 +1,16 @@
 
 #include "sprite2d_system.h"
 #include "itnos_components.h"
+#include "pray_entity.h"
 #include "pray_entity_registry.h"
+#include "pray_default_components.h"
 #include "pray_system.h"
 #include "raylib.h"
 
 static void renderUpdate()
 {
     LList entities;
-    Rc rc = prayEntityLookupAll(&entities, C(CID_SPRITE_2D), 1);
+    Rc rc = prayEntityLookupAll(&entities, C(CID(Sprite2DComponent)), 1);
     if (rc != RC_OK)
     {
         return;
@@ -18,12 +20,12 @@ static void renderUpdate()
     LListForEach(&entities, node)
     {
         Entity *entity = LListGetEntry(node, Entity);
-        Sprite2DComponent *sprite2d = prayEntityGetComponent(entity, CID_SPRITE_2D);
+        Sprite2DComponent *sprite2d = getComponent(entity, Sprite2DComponent);
 
         Vector2 position = {0, 0};
         float rotationDegrees = 0;
 
-        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
+        Transform2DComponent *transform = getComponent(entity, Transform2DComponent);
         if (transform != nullptr)
         {
             position = transform->position;
@@ -36,7 +38,7 @@ static void renderUpdate()
         {
             BeginShaderMode(*sprite2d->shader);
 
-            sprite2d->shaderCallback(entity, sprite2d);
+            sprite2d->preShaderCallback(entity, sprite2d);
         }
 
         DrawTexturePro(sprite2d->texture,

@@ -3,6 +3,8 @@
 #include "game_math.h"
 #include "itnos_components.h"
 #include "pathfind_component.h"
+#include "pray_default_components.h"
+#include "pray_entity.h"
 #include "pray_entity_registry.h"
 #include "pray_system.h"
 #include "pray_utils.h"
@@ -16,7 +18,7 @@ bool isInCircle(Vector2 circleCenter, Vector2 p, float radius)
     return ((deltaX * deltaX) + (deltaY * deltaY)) < (radius * radius);
 }
 
-static void moveUnitAlongPath(TransformComponent *transform, PathfindComponent *pathfind)
+static void moveUnitAlongPath(Transform2DComponent *transform, PathfindComponent *pathfind)
 {
     if (pathfind->active == false)
     {
@@ -41,11 +43,13 @@ static void moveUnitAlongPath(TransformComponent *transform, PathfindComponent *
 
 static void gameUpdate()
 {
-    Entity *worldEntity = prayEntityLookup(C(CID_WORLD), 1);
-    WorldComponent *worldComponent = prayEntityGetComponent(worldEntity, CID_WORLD);
+    Entity *worldEntity = prayEntityLookup(C(CID(WorldComponent)), 1);
+    WorldComponent *worldComponent = getComponent(worldEntity, WorldComponent);
+
+    cid *cids = C(CID(UnitComponent));
 
     LList units;
-    Rc rc = prayEntityLookupAll(&units, C(CID_UNIT, CID_TRANSFORM, CID_PATHFINDING, CID_COLLIDER_2D, CID_SPRITE_2D), 3);
+    Rc rc = prayEntityLookupAll(&units, C(CID(UnitComponent), CID(Transform2DComponent), CID(PathfindComponent), CID(Collider2DComponent), CID(Sprite2DComponent)), 5);
     if (rc != RC_OK)
     {
         return;
@@ -55,8 +59,8 @@ static void gameUpdate()
     LListForEach(&units, node)
     {
         Entity *entity = LListGetEntry(node, Entity);
-        TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
-        PathfindComponent *pathfind = prayEntityGetComponent(entity, CID_PATHFINDING);
+        auto transform = getComponent(entity, Transform2DComponent);
+        auto pathfind = getComponent(entity, PathfindComponent);
         // UnitComponent *unit = prayEntityGetComponent(entity, CID_UNIT);
 
         if (pathfind->active)

@@ -1,12 +1,14 @@
 
 #include "init_system.h"
 #include "itnos_components.h"
+#include "pray_component.h"
+#include "pray_default_components.h"
 #include "pray_entity.h"
 #include "pray_entity_registry.h"
 #include "pray_system.h"
-#include "turret_component.h"
-#include "world_component.h"
 #include <float.h>
+#include <inttypes.h>
+#include <stdio.h>
 
 #define TEXTURE_ARROW_RED "assets/red-arrow3.png"
 #define TEXTURE_ARROW_BLUE "assets/blue-arrow3.png"
@@ -40,7 +42,7 @@ static void configureShader(Entity *entity, struct Sprite2DComponent *sprite2D)
         return;
     }
 
-    SelectableComponent *selectable = prayEntityGetComponent(entity, CID_SELECTABLE);
+    SelectableComponent *selectable = getComponent(entity, SelectableComponent);
     if (selectable == nullptr)
     {
         return;
@@ -52,33 +54,21 @@ static void configureShader(Entity *entity, struct Sprite2DComponent *sprite2D)
 
 static void createEntity(float x, float y, Texture2D texture, Shader *shader)
 {
-    ComponentID cids[] = {
-        CID_UNIT,
-        CID_TRANSFORM,
-        CID_PATHFINDING,
-        CID_SPRITE_2D,
-        CID_COLLIDER_2D,
-        CID_SELECTABLE,
-        CID_TARGET};
+    cid cids[] = {
+        CID(UnitComponent),
+        CID(Transform2DComponent),
+        CID(PathfindComponent),
+        CID(Sprite2DComponent),
+        CID(Collider2DComponent),
+        CID(SelectableComponent),
+        CID(TargetComponent),
+    };
 
-    u32 cidsLen = sizeof(cids) / sizeof(ComponentID);
+    u32 cidsLen = sizeof(cids) / sizeof(cid);
 
     Entity *unitEntity = prayEntityNew(cids, cidsLen);
 
-    TransformComponent *transform = nullptr;
-    Sprite2DComponent *sprite2D = nullptr;
-    Collider2DComponent *collider2D = nullptr;
-
-    ComponentIDRef map[] = {
-        CID_REF(CID_TRANSFORM, &transform),
-        CID_REF(CID_SPRITE_2D, &sprite2D),
-        CID_REF(CID_COLLIDER_2D, &collider2D),
-    };
-    u32 mapLen = CID_REF_MAP_LEN(map);
-
-    prayEntityGetComponents(unitEntity, map, mapLen);
-
-    // transform = prayEntityGetComponent(unitEntity, CID_TRANSFORM);
+    auto transform = getComponent(unitEntity, Transform2DComponent);
 
     transform->position.x = x * world->tileSize;
     transform->position.y = y * world->tileSize;
@@ -86,16 +76,16 @@ static void createEntity(float x, float y, Texture2D texture, Shader *shader)
     float textureWidth = (float) texture.width;
     float textureHeight = (float) texture.height;
 
-    // sprite2D = prayEntityGetComponent(unitEntity, CID_SPRITE_2D);
+    auto sprite2D = getComponent(unitEntity, Sprite2DComponent);
 
     sprite2D->texture = texture;
     sprite2D->source = (Rectangle) {0, 0, textureWidth, textureHeight};
     sprite2D->origin = (Vector2) {textureWidth / 2, textureHeight / 2};
     sprite2D->rotationDegrees = 90;
     sprite2D->shader = shader;
-    sprite2D->shaderCallback = configureShader;
+    sprite2D->preShaderCallback = configureShader;
 
-    // collider2D = prayEntityGetComponent(unitEntity, CID_COLLIDER_2D);
+    auto collider2D = getComponent(unitEntity, Collider2DComponent);
 
     collider2D->type = COLLIDER_2D_TRIANGLE;
     collider2D->radius = 80;
@@ -104,14 +94,20 @@ static void createEntity(float x, float y, Texture2D texture, Shader *shader)
     prayEntityRegister(unitEntity);
 }
 
+#define LIST(...) {CID(__VA_ARGS__)}
+
 static void createTargetEntity()
 {
-    Entity *entity = prayEntityNew(C(CID_ENEMY, CID_HEALTH, CID_TRANSFORM, CID_COLLIDER_2D), 4);
-    TransformComponent *transform = prayEntityGetComponent(entity, CID_TRANSFORM);
+    Entity *entity = prayEntityNew(C(CID(EnemyComponent),
+                                     CID(HealthComponent),
+                                     CID(Transform2DComponent),
+                                     CID(Collider2DComponent)),
+                                   4);
+    auto transform = getComponent(entity, Transform2DComponent);
     transform->position.x = 20 * world->tileSize;
     transform->position.y = 20 * world->tileSize;
 
-    Collider2DComponent *collider = prayEntityGetComponent(entity, CID_COLLIDER_2D);
+    auto collider = getComponent(entity, Collider2DComponent);
     collider->radius = 100;
 
     prayEntityRegister(entity);
@@ -119,18 +115,18 @@ static void createTargetEntity()
 
 static void createTurret()
 {
-    ComponentID cids[] = {
-        CID_TURRET,
-        CID_TRANSFORM,
+    cid cids[] = {
+        CID(TurretComponent),
+        CID(Transform2DComponent),
     };
 
-    u32 cidsLen = sizeof(cids) / sizeof(ComponentID);
+    u32 cidsLen = sizeof(cids) / sizeof(cid);
 
     Entity *turretEntity = prayEntityNew(cids, cidsLen);
-    TurretComponent *turret = prayEntityGetComponent(turretEntity, CID_TURRET);
+    auto turret = getComponent(turretEntity, TurretComponent);
     turret->radius = 2000;
     turret->roundsPerSecond = 0.25f;
-    TransformComponent *transform = prayEntityGetComponent(turretEntity, CID_TRANSFORM);
+    auto transform = getComponent(turretEntity, Transform2DComponent);
     transform->position.x = 256 * 25;
     transform->position.y = 256 * 25;
 
@@ -139,9 +135,8 @@ static void createTurret()
 
 static void start()
 {
-
-    Entity *worldEntity = prayEntityLookup(C(CID_WORLD), 1);
-    world = prayEntityGetComponent(worldEntity, CID_WORLD);
+    Entity *worldEntity = prayEntityLookup(C(CID(WorldComponent)), 1);
+    world = getComponent(worldEntity, WorldComponent);
 
     textureBlue = LoadTexture(TEXTURE_ARROW_BLUE);
     textureRed = LoadTexture(TEXTURE_ARROW_RED);

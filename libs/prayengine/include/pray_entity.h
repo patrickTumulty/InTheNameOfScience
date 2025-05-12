@@ -26,6 +26,6 @@ Entity *prayEntityFree(Entity *entity);
 void *prayEntityGetComponent(Entity *entity, u32 componentID);
 void prayEntityGetComponents(Entity *entity, ComponentIDRef *refMap, u32 refMapLen);
 
-#define getComponent(ENTITY, CID) prayEntityGetComponent((ENTITY), (CID))
+#define getComponent(ENTITY, TYPE) (TYPE*) prayEntityGetComponent((ENTITY), CID(TYPE))
 
 #endif // ENTITY_H

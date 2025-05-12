@@ -7,7 +7,6 @@
 #include "pray_entity_registry.h"
 #include "pray_system.h"
 #include "raylib.h"
-#include "world_component.h"
 #include <pthread.h>
 #include <threads.h>
 
@@ -16,8 +15,8 @@ static WorldComponent *world;
 
 static void start()
 {
-    worldEntity = prayEntityNew(C(CID_WORLD), 1);
-    world = prayEntityGetComponent(worldEntity, CID_WORLD);
+    worldEntity = prayEntityNew(C(CID(WorldComponent)), 1);
+    world = getComponent(worldEntity, WorldComponent);
     prayEntityRegister(worldEntity);
 }
 
